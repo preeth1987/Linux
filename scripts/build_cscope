@@ -1,0 +1,37 @@
+#!/bin/bash
+ 
+#cscope DB location
+CSCOPE_DB=(/home/user/cscope)
+ 
+# Search Path list
+SEARCH_DIRS=(/home/source1)
+SEARCH_DIRS+=(/home/source2)
+ 
+# Exclude/filter path list
+EXCLUDE_DIRS=(/usr/src)
+EXCLUDE_DIRS+=(/src)
+ 
+#######################
+# Start the script now
+#######################
+pwd=`pwd`
+echo "pwd: $pwd"
+rm $pwd/cscope*
+ 
+# Generate the cscope.files
+len=${#SEARCH_DIRS[*]}
+for (( i=0; i<len; i++ ))
+do
+    find ${SEARCH_DIRS[$i]} -iname '*.c' -o -iname '*.cpp' -o -iname '*.h' -o -iname '*.xml' >> $pwd/cscope.files
+done
+ 
+# Filter cscope.file based on exclude list
+len=${#EXCLUDE_DIRS[*]}
+for (( i=0; i<len; i++ ))
+do
+    cat $pwd/cscope.files | grep -v ${EXCLUDE_DIRS[$i]} > $pwd/temp
+    mv $pwd/temp ${CSCOPE_DB}/cscope.files
+done
+ 
+# Generate cscsope db
+cscope -b -q -k
