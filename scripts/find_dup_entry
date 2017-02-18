@@ -1,0 +1,12 @@
+ivid-profiles
+unset profile
+unset profile_id
+for (( i=1;i<=259;i++ )); do profile[$i]=`db rte show vrrp profile $i | grep -vE "IIVID|RTE" | awk '{print $2}' -`; done
+
+for (( i=0;i<=255;i++ )); do profile_id[$i]=0; done
+
+for i in ${profile[*]}; do profile_id[$i]=$((${profile_id[$i]}+1)); done
+
+echo ${profile_id[*]}
+
+echo ${profile[*]}

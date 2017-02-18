@@ -1,0 +1,1 @@
+rpm2cpio fabos-swbd1000-5.0.0-13.ppc.rpm | cpio -idmv

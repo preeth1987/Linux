@@ -1,0 +1,16 @@
+tclsh
+set pline ""
+set phr 0
+set pmin 0
+set psec 0
+foreach line $data {
+	if [regexp {(\d+):(\d+):(\d+).\d+\sIP.*length\s20)} $line m hr min sec] {
+		if { $phr} {
+
+		}
+		set phr $hr
+		set pmin $min
+		set psec $sec
+		set pline $line
+	}
+}

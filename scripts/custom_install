@@ -1,0 +1,9 @@
+rpm --initdb --dbpath /users/home40/preetham/bin/packages/lib/rpm
+rpm -qlp package.rpm
+rpm -ivh package.rpm
+rpm --root /users/home40/preetham/bin/packages --dbpath /users/home40/preetham/bin/packages/lib/rpm --relocate /usr=/users/home40/preetham/bin/packages --nodeps -ivh package.rpm
+
+cd package
+./configure --prefix=$HOME
+make
+make install

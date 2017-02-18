@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+ldapsearch -x -LLL uid=* > $HOME/private/users1.txt
+md5sum_diff1=$(md5sum $HOME/private/users.txt | awk '{print $1}' )
+md5sum_diff2=$(md5sum $HOME/private/users1.txt | awk '{print $1}' )
+
+#echo "$md5sum_diff1 $md5sum_diff2"
+if [ $md5sum_diff1 != $md5sum_diff2 ]
+then
+	echo "users:"
+	echo ""
+	#echo "`diff $HOME/private/users.txt $HOME/private/users1.txt` : "
+	#filtered=$(diff $HOME/private/users.txt $HOME/private/users1.txt | grep -E 'uid=X[a-zA-Z]*X')
+	rem_user=$(diff $HOME/private/users.txt $HOME/private/users1.txt | grep -E 'uid=X[a-zA-Z]*X' | cut -c11-99 | sed 's/\(X[a-z]*X\).*/\1/')
+	echo "REMOVED"
+	for i in $rem_user
+	do
+		echo " ----------------------------- "
+		grep $i $HOME/private/users1.txt -A15 | grep -E "uid|cb|sn|gecos"
+		echo " ----------------------------- "
+	done
+	echo ""
+	echo "New Users:"
+	diff $HOME/private/users.txt $HOME/private/users1.txt | grep gecos | cut -c9-100
+fi
+
+mv $HOME/private/users1.txt $HOME/private/users.txt

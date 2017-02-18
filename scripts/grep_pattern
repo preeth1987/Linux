@@ -1,0 +1,16 @@
+tclsh
+
+set file "./screenlog.0"
+set fsize [file size $file]
+set fp [open $file r]
+set data [read $fp $fsize]
+set data [split $data "\n"]
+set wfile "./tcpdump.2"
+set wfp [open $wfile w]
+
+foreach line $data {
+	if [regexp {(\d\d:\d\d:\d\d.\d+.*20)} $line m mline] {
+		puts $wfp "$mline"
+	}
+}
+
