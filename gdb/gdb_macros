@@ -1,0 +1,83 @@
+define traverse_list
+set $head=mq->mq_link->ml_head
+set $node=(msg_t*)($head+1)
+set $count=0
+while ($count < $arg0)
+p $node->msg_type
+set $head = $head->mh_next
+set $count=$count+1
+end
+end
+
+
+
+(gdb) define traverse_list
+Type commands for definition of "traverse_list".
+End with a line saying just "end".
+>set $head=mq->mq_link->ml_head
+>set $node=(msg_t*)($head+1)
+>set $count=0
+>while ($count < $arg0)
+>p $node->msg_type
+>set $head = $head->mh_next
+>set $count=$count+1
+>end
+>end
+
+(gdb) define count_fss
+Redefine command "count_fss"? (y or n) y
+Type commands for definition of "count_fss".
+End with a line saying just "end".
+>set $head=mq->mq_link->ml_head
+>set $node=(msg_t*)($head+1)
+>set $count=0
+>set $total=0
+>while ($count < $arg0)
+> if ($node->msg_type == MSG_FSS)
+  >  set $total=$total+1
+  >  end
+> set $head = $head->mh_next
+> set $count=$count+1
+> end
+>p $count
+>end
+
+
+
+define traverse_list
+set $head=bgpPcb.msgq->mq_link->ml_head
+set $node=(msg_t*)($head+1)
+set $count=0
+set $total=0
+while ($count < $arg0)
+if ($node->msg_type == MSG_TO)
+set $total=$total+1
+end
+set $head = $head->mh_next
+set $count=$count+1
+end
+p $total
+end
+
+
+
+#AVL PRINT RECURSIVE printavlrecursive <root>
+define printavlrecursive
+if $arg0
+#printf "INFO PTR 0x%x \n", $arg0->info
+set $entry = (l2sys_mac_entry_t *)$arg0->info
+printonefdb $entry
+#printf "MAC %02x:%02x:%02x:%02x:%02x:%02x IVID %d RBRIDGEID %d IFINDEX 0x%x AGGTYPE %d\n", \
+#   $entry->mac->addr[0], $entry->mac->addr[1], $entry->mac->addr[2], \
+#   $entry->mac->addr[3], $entry->mac->addr[4], $entry->mac->addr[5], \
+#   $entry->fid, $entry->rbridge_id, $entry->ifindex, $entry->agg_type
+#printf "PORTDLLNEXT 0x%x PORTDLLPREV 0x%x SPRBRIDGEID %d SPIFINDEX 0x%x \n", \
+#   $entry->portdll_next, $entry->portdll_prev, $entry->sp_rbridge_id, $entry->sp_ifindex
+if ($arg0->left)
+	printavlrecursive $arg0->left
+	end
+if ($arg0->right)
+	printavlrecursive $arg0->right
+	end
+	end
+	end 

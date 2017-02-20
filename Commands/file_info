@@ -1,0 +1,7 @@
+file <binary>: command to know type
+size -t <binary>: get text, data, bss of a file
+readelf -a <binary>: info about elf files 
+
+Tools for examining different phases of compiling and running a C program
+objdump 
+https://www.cs.swarthmore.edu/~newhall/unixhelp/compilecycle.html
