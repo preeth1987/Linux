@@ -36,5 +36,5 @@ gitco() {
 }
 gitci() {
 	git commit $1 -m "commit"
-	git push $1
+	git push
 }
