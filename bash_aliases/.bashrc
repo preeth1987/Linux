@@ -83,8 +83,8 @@ shopt -s xpg_echo
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
-if [ -f ~/.bash_aliases ]; then
-	. ~/.bash_aliases
+if [ -f ~/git/Linux/bash_aliases/.bash_aliases ]; then
+	. ~/git/Linux/bash_aliases/.bash_aliases
 fi
 
 # enable programmable completion features (you don't need to enable
@@ -110,8 +110,8 @@ if [ -f /usr/atria/bin/cleartool ]; then
 
 	nosPwv=`cleartool pwv|grep nos`
 	if [ "$nosPwv" ]; then
-		echo Setting CSCOPE_DB=/users/home40/preetham/cscope;
-		export CSCOPE_DB=/users/home40/preetham/cscope;
+		echo Setting CSCOPE_DB=$HOME/cscope;
+		export CSCOPE_DB=$HOME/cscope;
 	fi
 fi
 
