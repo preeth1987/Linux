@@ -122,3 +122,7 @@ if [ "$isWin" ]; then
 		. ~/.cygwin_bash_aliases
 	fi
 fi
+
+if [ -f ~/private/.mycreds ]; then
+. ~/private/.mycreds
+fi

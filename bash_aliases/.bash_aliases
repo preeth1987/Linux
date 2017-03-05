@@ -13,6 +13,8 @@ alias search_replace="sed -i -- 's/searchPattern/replacePattern/g' *"
 alias agrep="find . -name '*.[ch]' | xargs grep -i $1"
 alias hgrep="find . -name '*.[h]' | xargs grep -i $1"
 
+alias svm="ssh_script"
+
 #vim aliases
 set -o vi
 alias vi='vim'
