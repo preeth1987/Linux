@@ -1,6 +1,8 @@
 #linux aliases
 alias cdb='. ~/bin/cdb'
-SCRIPT_DIR=$HOME/scripts
+alias gitdir="$HOME/git"
+alias cdgit="cd $HOME/git"
+SCRIPT_DIR=$gitdir/Linux/scripts
 export PATH=$PATH:$SCRIPT_DIR
 alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1024;tot=tot+\$1;printf \"%dMB -> %s\n\",size,\$2 } END { printf \"Total: %dKB\n\", tot }'"
 alias tip="cat ~/tip | grep -i $1"
@@ -25,4 +27,14 @@ alias ="clear"
 
 del_ssh_key() {
 	sed -i '/'$1'/d' ~/.ssh/known_hosts
+}
+
+
+#git commands
+gitco() {
+	git checkout $1
+}
+gitci() {
+	git commit $1 -m "commit"
+	git push $1
 }
