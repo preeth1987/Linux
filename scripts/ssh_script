@@ -1,0 +1,9 @@
+#!/usr/bin/expect -f
+set HOST "$env(VM)"
+set USER "$env(USER)"
+set PASS "$env(PASS)"
+puts "SSH to $HOST uname $USER"
+spawn ssh $USER@$HOST
+expect "assword:"
+send "$PASS\r"
+interact
