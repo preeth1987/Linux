@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Installing package $*"
+/cygdrive/c/My_data/softwares/cygwin/setup-x86_64.exe --quiet-mode --packages $*
