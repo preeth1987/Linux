@@ -32,9 +32,9 @@ del_ssh_key() {
 
 #git commands
 gitco() {
-	git checkout $1
+	git checkout $*
 }
 gitci() {
-	git commit $1 -m "commit"
+	git commit $* -m "commit"
 	git push
 }
