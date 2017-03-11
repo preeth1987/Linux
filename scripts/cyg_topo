@@ -1,4 +1,5 @@
 #!/bin/bash
+#Topology CSV to be in format NAME,Console,MGMT IP
 
 if [ $# -lt 2 ]; then
 	echo "Usage: cyg_topo <topology> <console/mgmt>"
