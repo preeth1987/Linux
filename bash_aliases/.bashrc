@@ -118,8 +118,8 @@ fi
 isWin=`uname | grep -i cygwin`
 if [ "$isWin" ]; then
 	echo setting windows aliases;
-	if [ -f ~/.cygwin_bash_aliases ]; then
-		. ~/.cygwin_bash_aliases
+	if [ -f ~/git/Linux/bash_aliases/.cygwin_bash_aliases ]; then
+		. ~/git/Linux/bash_aliases/.cygwin_bash_aliases
 	fi
 fi
 
