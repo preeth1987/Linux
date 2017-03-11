@@ -16,6 +16,7 @@ alias agrep="find . -name '*.[ch]' | xargs grep -i $1"
 alias hgrep="find . -name '*.[h]' | xargs grep -i $1"
 
 alias svm="ssh_script"
+alias rpi="ssh osmc@osmc"
 
 #vim aliases
 set -o vi
