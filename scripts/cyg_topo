@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+	echo "Usage: cyg_topo <topology>"
+	echo "		 topology is csv file located in $HOME/topology"
+	exit
+fi
+
+if [ -f $HOME/topology/$1 ]; then
+	echo "Connecting to all nodes in topology $1"
+fi
+echo "Connecting.."
+
+unset topo
+unset topo_name
+unset topo_console
+unset topo_ip
+
+select NODE in `cut -d',' -f1 $HOME/topology/$1`;
+do
+	echo "you selected $NODE";
+	if [ "$REPLY" = "0" ] ; then break ; fi
+	if [ -n $NODE ] ; then
+		#echo "Console : `cut -d',' -f2 `sed -n "$REPLY\p" $HOME/topology/$1``";
+		console=`sed -n "$REPLY"p $HOME/topology/$1 | cut -d',' -f2 -`;
+		echo "console $console"
+		mintty --title $NODE --exec telnet $console &
+	fi
+done
