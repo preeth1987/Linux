@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-	echo "Usage: cyg_topo <topology> <serial/mgmt>"
+	echo "Usage: cyg_topo <topology> <console/mgmt>"
 	echo "		 topology is csv file location"
 	exit
 fi
@@ -15,8 +15,8 @@ else
 	exit
 fi
 
-if [[ "${2,,}" == s* ]]; then
-	echo "Serial Connection"
+if [[ "${2,,}" == c* ]]; then
+	echo "Console Connection"
 	column=2;
 fi
 
@@ -35,8 +35,9 @@ do
 		do
 			echo "Telnet to $i..."
 			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
-			echo "IP $IP"
-			mintty --title $NODE --exec telnet $IP &
+			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
+			echo "NODE: $NODE : IP $IP"
+			mintty --title "$2_$NODE" --exec telnet $IP &
 			index=$(expr $index + 1);
 		done
 		break; 
@@ -44,6 +45,6 @@ do
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
 		echo "console $IP"
-		mintty --title $NODE --exec telnet $IP &
+		mintty --title "$2_$NODE" --exec telnet $IP &
 	fi
 done
