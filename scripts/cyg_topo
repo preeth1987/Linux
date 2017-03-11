@@ -1,29 +1,49 @@
 #!/bin/bash
 
-if [ $# -lt 1 ]; then
-	echo "Usage: cyg_topo <topology>"
-	echo "		 topology is csv file located in $HOME/topology"
+if [ $# -lt 2 ]; then
+	echo "Usage: cyg_topo <topology> <serial/mgmt>"
+	echo "		 topology is csv file location"
 	exit
 fi
 
-if [ -f $HOME/topology/$1 ]; then
-	echo "Connecting to all nodes in topology $1"
+CSVFILE=$1
+
+if [ -f $CSVFILE ]; then
+	echo "Topology file $CSVFILE found"
+else
+	echo "FILE $CSVFILE not found"
+	exit
 fi
-echo "Connecting.."
 
-unset topo
-unset topo_name
-unset topo_console
-unset topo_ip
+if [[ "${2,,}" == s* ]]; then
+	echo "Serial Connection"
+	column=2;
+fi
 
-select NODE in `cut -d',' -f1 $HOME/topology/$1`;
+if [[ "${2,,}" == m* ]]; then
+	echo "MGMT connection"
+	column=3;
+fi
+
+echo "0) ALL"
+select NODE in `cut -d',' -f1 $CSVFILE`;
 do
 	echo "you selected $NODE";
-	if [ "$REPLY" = "0" ] ; then break ; fi
+	if [ "$REPLY" = "0" ] ; then 
+		index=1
+		for i in `cut -d',' -f1 $CSVFILE`
+		do
+			echo "Telnet to $i..."
+			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
+			echo "IP $IP"
+			mintty --title $NODE --exec telnet $IP &
+			index=$(expr $index + 1);
+		done
+		break; 
+	fi
 	if [ -n $NODE ] ; then
-		#echo "Console : `cut -d',' -f2 `sed -n "$REPLY\p" $HOME/topology/$1``";
-		console=`sed -n "$REPLY"p $HOME/topology/$1 | cut -d',' -f2 -`;
-		echo "console $console"
-		mintty --title $NODE --exec telnet $console &
+		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
+		echo "console $IP"
+		mintty --title $NODE --exec telnet $IP &
 	fi
 done
