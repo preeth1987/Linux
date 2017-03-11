@@ -1,2 +1,2 @@
 echo setting cygwin aliases;
-
+alias nterm="mintty &"
