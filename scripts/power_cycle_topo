@@ -1,0 +1,28 @@
+#!/bin/bash
+#Topology CSV to be in format NAME,Console,MGMT IP,POWER TOWER INFO
+
+if [ $# -lt 1 ]; then
+	echo "Usage: power_cycle_topo <topology>"
+	echo "		 topology is csv file location"
+	exit
+fi
+
+CSVFILE=$1
+
+if [ -f $CSVFILE ]; then
+	echo "Topology file $CSVFILE found"
+else
+	echo "FILE $CSVFILE not found"
+	exit
+fi
+
+column=4
+select NODE in `cut -d',' -f1 $CSVFILE`;
+do
+	echo "you selected $NODE";
+	if [ -n $NODE ] ; then
+		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
+		echo "Power Tower $IP"
+		/home/preetham/git/Linux/scripts/power_cycle $IP
+	fi
+done
