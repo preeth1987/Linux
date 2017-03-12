@@ -1,0 +1,515 @@
+#!/usr/bin/expect -f
+
+global reportlog
+
+log_user 0
+
+proc powerCycleOn { ip port_list username password } {
+
+    exp_spawn telnet $ip
+    printLog "powercycleon spanw-id is $spawn_id"
+    set timeout 20
+    expect {
+	    "login:" {
+	        exp_send "$username\r"
+	        exp_continue
+	    } "assword:" {
+	        exp_send "$password\r"
+	        exp_continue
+	    } "cli->" {
+	        exp_send "ls\r"
+	    } timeout {
+	        printLog "timed out 20 seconds, trying to login and get to prompt of power tower"
+            return -1
+	    }
+	  
+    }
+    set firmware "older"
+    expect {
+	    "cli->" {
+	        foreach item $expect_out(buffer) {
+		        if {[string first "access" $item] >= 0} {
+		            #new 2.0 power tower has access under the parent directory called CLI
+		            # older does not
+		            set firmware "newer"
+		        } 
+	        }
+	        # exp_send "cd power_management/management\r"
+	    }
+
+    }
+    if {$firmware == "older"} {
+	    exp_send "cd power_management/management\r"
+	    expect {
+	        "cli->" {
+		        if {[string first "management" $expect_out(buffer)] >=0} {
+		            printLog "correctly got into the management directory in power tower" 
+		        } else {
+		            printLog "did not find string \"management\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        exp_send "ls\r"
+	        }
+	    
+	    }
+	
+	    expect {
+	        "cli->" {
+		        add_status "*** $expect_out(buffer)"
+		        foreach line $expect_out(buffer) {
+		            if {[regexp "^(\[-_0-9A-Za-z]+)/" $line ignore dirName]} {
+			            printLog "dirName found: $dirName"
+		            }
+		        }
+		        exp_send "cd $dirName/outlet_table\r"
+	        }
+	    
+	    }
+	
+	    expect {
+	        "cli->" {
+		        if {[string first $dirName $expect_out(buffer)]>=0} {
+		            printLog "correctly changed directory to $dirName"
+		        } else {
+		            printLog "did not find string \"$dirName\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        if {[string first "outlet_table" $expect_out(buffer)]>=0} {
+		            printLog "correctly changed directory to outlet_table, ready to power cycle"
+		        } else {
+		            printLog "did not find string \"outlet_table\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        # turn off ports
+		        if {[llength $port_list] == 2} {
+		            set group "[lindex $port_list 0],[lindex $port_list 1]"
+		        } else {
+		            set group $port_list
+		        }
+		        exp_send "on $group\r"
+		        exp_continue
+	        }
+            ":" {
+		        exp_send "yes\r"
+		        exp_send "\r"
+	        }
+            timeout {
+		        printLog "timed out waiting for prompt"
+                return -1
+	        }
+	    
+	    }
+    } else {
+	    exp_send "cd access\r"
+	    expect {
+	        "cli->" {
+		        if {[string first "access" $expect_out(buffer)] >=0} {
+		            printLog "correctly got into the access directory in power tower"
+		        } else {
+		            printLog "did not find string \"access\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        exp_send "ls\r"
+	        }
+	    
+	    }
+	    expect {
+	        "cli->" {
+		        set nextDir -1
+		        foreach item $expect_out(buffer) {
+		            if {[string first "PS" $item] == -1} {
+			            if {[string first "/" $item] >= 0} {
+			                set item [lindex [split [string trim $item] "/"] 0]
+			                printLog "item is $item"
+			                set nextDir $item
+			            }
+		            }
+		        }
+		        if {$nextDir == -1} {
+		            printLog "could not find name directory under \"access\" that did not have \"PS\" in its name"
+                    return -1
+		        } else {
+		            exp_send "cd $nextDir\r"
+		        }
+	        }
+	    }
+	    expect {
+	        "cli->" {
+		        set new_port_list ""
+		        foreach h $port_list {
+		            set toAppend $nextDir
+		            append toAppend _$h
+		            lappend new_port_list $toAppend
+		        }
+		        if {[llength $new_port_list] == 2} {
+		            set group "[lindex $new_port_list 0],[lindex $new_port_list 1]"
+		        } else {
+		            set group $new_port_list
+		        }
+		        exp_send "on $group\r"
+				#exp_send "\r"
+		        exp_continue
+	        } 
+            ":" {
+		        exp_send "yes\r"
+				exp_send "\r"
+                printLog "powered on successfully"
+	        }
+            timeout {
+		        printLog "timed out waiting for prompt after confirming repower on of $group port"
+                return -1
+	        }
+	        
+	    }
+	
+    }
+    return 0
+}
+
+
+proc powerCycleOff { ip port_list username password } {
+
+    exp_spawn telnet $ip
+    printLog "powercycle spanw-id is $spawn_id"
+    set timeout 20
+    expect {
+	    "login:" {
+	        exp_send "$username\r"
+	        exp_continue
+	    } "assword:" {
+	        exp_send "$password\r"
+	        exp_continue
+	    } "cli->" {
+	        exp_send "ls\r"
+	    } timeout {
+	        printLog "timed out 20 seconds, trying to login and get to prompt of power tower"
+            return -1
+	    }
+	  
+    }
+    set firmware "older"
+    expect {
+	    "cli->" {
+	        foreach item $expect_out(buffer) {
+		        if {[string first "access" $item] >= 0} {
+		            #new 2.0 power tower has access under the parent directory called CLI
+		            # older does not
+		            set firmware "newer"
+		        } 
+	        }
+	        # exp_send "cd power_management/management\r"
+	    }
+
+    }
+    if {$firmware == "older"} {
+	    exp_send "cd power_management/management\r"
+	    expect {
+	        "cli->" {
+		        if {[string first "management" $expect_out(buffer)] >=0} {
+		            printLog "correctly got into the management directory in power tower" 
+		        } else {
+		            printLog "did not find string \"management\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        exp_send "ls\r"
+	        }
+	    
+	    }
+	
+	    expect {
+	        "cli->" {
+		        add_status "*** $expect_out(buffer)"
+		        foreach line $expect_out(buffer) {
+		            if {[regexp "^(\[-_0-9A-Za-z]+)/" $line ignore dirName]} {
+			            printLog "dirName found: $dirName"
+		            }
+		        }
+		        exp_send "cd $dirName/outlet_table\r"
+	        }
+	    
+	    }
+	
+	    expect {
+	        "cli->" {
+		        if {[string first $dirName $expect_out(buffer)]>=0} {
+		            printLog "correctly changed directory to $dirName"
+		        } else {
+		            printLog "did not find string \"$dirName\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        if {[string first "outlet_table" $expect_out(buffer)]>=0} {
+		            printLog "correctly changed directory to outlet_table, ready to power cycle"
+		        } else {
+		            printLog "did not find string \"outlet_table\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        # turn off ports
+		        if {[llength $port_list] == 2} {
+		            set group "[lindex $port_list 0],[lindex $port_list 1]"
+		        } else {
+		            set group $port_list
+		        }
+		        exp_send "off $group\r"
+		        exp_continue
+	        }
+            ":" {
+		        exp_send "yes\r"
+	        }
+            timeout {
+		        printLog "timed out waiting for prompt"
+                return -1
+	        }
+	    
+	    }
+    } else {
+	    exp_send "cd access\r"
+	    expect {
+	        "cli->" {
+		        if {[string first "access" $expect_out(buffer)] >=0} {
+		            printLog "correctly got into the access directory in power tower"
+		        } else {
+		            printLog "did not find string \"access\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        exp_send "ls\r"
+	        }
+	    
+	    }
+	    expect {
+	        "cli->" {
+		        set nextDir -1
+		        foreach item $expect_out(buffer) {
+		            if {[string first "PS" $item] == -1} {
+			            if {[string first "/" $item] >= 0} {
+			                set item [lindex [split [string trim $item] "/"] 0]
+			                printLog "item is $item"
+			                set nextDir $item
+			            }
+		            }
+		        }
+		        if {$nextDir == -1} {
+		            printLog "could not find name directory under \"access\" that did not have \"PS\" in its name"
+                    return -1
+		        } else {
+		            exp_send "cd $nextDir\r"
+		        }
+	        }
+	    }
+	    expect {
+	        "cli->" {
+		        set new_port_list ""
+		        foreach h $port_list {
+		            set toAppend $nextDir
+		            append toAppend _$h
+		            lappend new_port_list $toAppend
+		        }
+		        if {[llength $new_port_list] == 2} {
+		            set group "[lindex $new_port_list 0],[lindex $new_port_list 1]"
+		        } else {
+		            set group $new_port_list
+		        }
+		        exp_send "off $group\r"
+		        exp_continue
+	        } 
+            ":" {
+		        exp_send "yes\r"
+                printLog "powered off successfully"
+	        }
+            timeout {
+		        printLog "timed out waiting for prompt after confirming repower on of $group port"
+                return -1
+	        }
+	        
+	    }
+	
+    }
+    return 0
+
+}
+
+proc powerCycle { ip port_list username password } {
+
+    exp_spawn telnet $ip
+    printLog "powercycle spanw-id is $spawn_id"
+    set timeout 20
+    expect {
+	    "login:" {
+	        exp_send "$username\r"
+	        exp_continue
+	    } "assword:" {
+	        exp_send "$password\r"
+	        exp_continue
+	    } "cli->" {
+	        exp_send "ls\r"
+	    } timeout {
+	        printLog "timed out 20 seconds, trying to login and get to prompt of power tower"
+            return -1
+	    }
+	  
+    }
+    set firmware "older"
+    expect {
+	    "cli->" {
+	        foreach item $expect_out(buffer) {
+		        if {[string first "access" $item] >= 0} {
+		            #new 2.0 power tower has access under the parent directory called CLI
+		            # older does not
+		            set firmware "newer"
+		        } 
+	        }
+	        # exp_send "cd power_management/management\r"
+	    }
+
+    }
+    if {$firmware == "older"} {
+	    exp_send "cd power_management/management\r"
+	    expect {
+	        "cli->" {
+		        if {[string first "management" $expect_out(buffer)] >=0} {
+		            printLog "correctly got into the management directory in power tower" 
+		        } else {
+		            printLog "did not find string \"management\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        exp_send "ls\r"
+	        }
+	    
+	    }
+	
+	    expect {
+	        "cli->" {
+		        add_status "*** $expect_out(buffer)"
+		        foreach line $expect_out(buffer) {
+		            if {[regexp "^(\[-_0-9A-Za-z]+)/" $line ignore dirName]} {
+			            printLog "dirName found: $dirName"
+		            }
+		        }
+		        exp_send "cd $dirName/outlet_table\r"
+	        }
+	    
+	    }
+	
+	    expect {
+	        "cli->" {
+		        if {[string first $dirName $expect_out(buffer)]>=0} {
+		            printLog "correctly changed directory to $dirName"
+		        } else {
+		            printLog "did not find string \"$dirName\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        if {[string first "outlet_table" $expect_out(buffer)]>=0} {
+		            printLog "correctly changed directory to outlet_table, ready to power cycle"
+		        } else {
+		            printLog "did not find string \"outlet_table\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        # turn off ports
+		        if {[llength $port_list] == 2} {
+		            set group "[lindex $port_list 0],[lindex $port_list 1]"
+		        } else {
+		            set group $port_list
+		        }
+		        exp_send "cycl $group\r"
+		        exp_continue
+	        }
+            ":" {
+		        exp_send "yes\r"
+	        }
+            timeout {
+		        printLog "timed out waiting for prompt"
+                return -1
+	        }
+	    
+	    }
+    } else {
+	    exp_send "cd access\r"
+	    expect {
+	        "cli->" {
+		        if {[string first "access" $expect_out(buffer)] >=0} {
+		            printLog "correctly got into the access directory in power tower"
+		        } else {
+		            printLog "did not find string \"access\" in the prompt of power tower, did not change directories properly"
+                    return -1
+		        }
+		        exp_send "ls\r"
+	        }
+	    
+	    }
+	    expect {
+	        "cli->" {
+		        set nextDir -1
+		        foreach item $expect_out(buffer) {
+		            if {[string first "PS" $item] == -1} {
+			            if {[string first "/" $item] >= 0} {
+			                set item [lindex [split [string trim $item] "/"] 0]
+			                printLog "item is $item"
+			                set nextDir $item
+			            }
+		            }
+		        }
+		        if {$nextDir == -1} {
+		            printLog "could not find name directory under \"access\" that did not have \"PS\" in its name"
+                    return -1
+		        } else {
+		            exp_send "cd $nextDir\r"
+		        }
+	        }
+	    }
+	    expect {
+	        "cli->" {
+		        set new_port_list ""
+		        foreach h $port_list {
+		            set toAppend $nextDir
+		            append toAppend _$h
+		            lappend new_port_list $toAppend
+		        }
+		        if {[llength $new_port_list] == 2} {
+		            set group "[lindex $new_port_list 0],[lindex $new_port_list 1]"
+		        } else {
+		            set group $new_port_list
+		        }
+		        exp_send "cycle $group\r"
+		        exp_continue
+	        } 
+            ":" {
+		        exp_send "yes\r"
+                printLog "powered cycle successfully"
+	        }
+            timeout {
+		        printLog "timed out waiting for prompt after confirming repower on of $group port"
+                return -1
+	        }
+	        
+	    }
+	
+    }
+    return 0
+
+}
+
+log_user 1
+
+set logFd 0
+proc printLog { args } {
+    global logFd
+
+    if { $logFd != 0 } {
+        puts $logFd [join $args]
+            flush $logFd
+    }
+    puts [join $args]
+}
+
+if { $argc < 2 } {
+	printLog "Usage: power_cycle <IP> <PORT>\n"
+		exit
+}
+
+set rpIp [lindex $argv 0]
+set rpPort [lindex $argv 1]
+
+powerCycleOff $rpIp $rpPort user pass
+sleep 20
+powerCycleOn $rpIp $rpPort user pass
+powerCycleOn $rpIp $rpPort user pass
+#powerCycle $rpIp $rpPort user pass
