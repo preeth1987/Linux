@@ -19,11 +19,12 @@ fi
 if [[ "${2,,}" == c* ]]; then
 	echo "Console Connection"
 	column=2;
-fi
-
-if [[ "${2,,}" == m* ]]; then
+elif [[ "${2,,}" == m* ]]; then
 	echo "MGMT connection"
 	column=3;
+else
+	echo "%Error: Invalid connection type mentioned. Select console/mgmt"
+	exit
 fi
 
 echo "0) ALL"
