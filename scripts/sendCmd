@@ -1,0 +1,55 @@
+#!/usr/bin/expect
+
+if { $argc < 2 } {
+	send_user "Usage: sendCmd <switchIpAddr> <commands separated by;>\n"
+	exit
+}
+
+spawn /bin/bash
+
+lappend session_list $spawn_id
+set spawn_id [lindex $session_list 0]
+
+set switchIpAddr [lindex $argv 0]
+set cmds [lindex $argv 1]
+
+set fosPrompt "#"
+set nosPrompt "#"
+
+match_max 100000
+
+set spawn_id [lindex $session_list 0]
+
+send_user "Cleaning up SSH key for $switchIpAddr\n"
+#send -- "sed -i '/'$switchIpAddr'/d' ~/.ssh/known_hosts\r"
+send -- "del_ssh_key $switchIpAddr"
+expect "*"
+send -- "\r"
+expect "*"
+#exit
+
+spawn telnet $switchIpAddr
+
+lappend session_list $spawn_id
+set spawn_id [lindex $session_list 1]
+
+#Look for username
+expect "*login:*"
+send -- "admin\r"
+# Look for passwod prompt
+expect "*Password:*"
+# Send password aka $password
+send -- "password\r"
+expect $nosPrompt
+
+set cmdList [split $cmds ";"]
+foreach cmd $cmdList {
+	send -- "$cmd\r"
+	expect $nosPrompt
+	send -- "\r"
+	expect $nosPrompt
+}
+send -- "exit\r"
+expect $fosPrompt
+exit
+exit

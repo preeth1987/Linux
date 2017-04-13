@@ -1,0 +1,50 @@
+#!/bin/bash
+#Topology CSV to be in format NAME,Console,MGMT IP
+
+if [ $# -lt 2 ]; then
+	echo "Usage: cyg_topo <topology> <console/mgmt>"
+	echo "		 topology is csv file location"
+	exit
+fi
+
+CSVFILE=$1
+
+if [ -f $CSVFILE ]; then
+	echo "Topology file $CSVFILE found"
+else
+	echo "FILE $CSVFILE not found"
+	exit
+fi
+
+if [[ "${2,,}" == c* ]]; then
+	echo "Console Connection"
+	column=2;
+elif [[ "${2,,}" == m* ]]; then
+	echo "MGMT connection"
+	column=3;
+else
+	echo "%Error: Invalid connection type mentioned. Select console/mgmt"
+	exit
+fi
+
+index=1
+x=0
+y=0
+orientation=0 #right=1 or down=0
+for i in `cut -d',' -f1 $CSVFILE`
+do
+	echo "Telnet to $i $x X $y ..."
+	IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
+	NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
+	echo "NODE: $NODE : IP $IP"
+	mintty -p $x,$y -s 114,18 --title "$2_$NODE" --exec telnet $IP &
+	index=$(expr $index + 1);
+	if [ $orientation -eq 1 ] ; then
+		y=$(expr $y + 350);
+		x=0;
+		orientation=0;
+	else
+		x=$(expr $x + 952);
+		orientation=1;
+	fi
+done
