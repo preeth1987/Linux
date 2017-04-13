@@ -42,5 +42,5 @@ del_ssh_key() {
 	sed -i '/'$1'/d' ~/.ssh/known_hosts
 }
 sendToAll() {
-	for i in `dumpIp $1`; do echo "IP: $i CMD: $2"; $SCRIPT_DIR/sendCmd $i $2; done
+	for i in `dumpIp $1`; do echo "IP: $i CMD: $2"; $SCRIPT_DIR/sendCmd $i "$2"; done
 }
