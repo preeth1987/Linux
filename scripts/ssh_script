@@ -4,6 +4,9 @@ set USER "$env(USER)"
 set PASS "$env(PASS)"
 puts "SSH to $HOST uname $USER"
 spawn ssh $USER@$HOST
+log_user 0
 expect "assword:"
 send "$PASS\r"
+log_user 1
+send "\r"
 interact
