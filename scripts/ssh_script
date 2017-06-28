@@ -6,7 +6,8 @@ puts "SSH to $HOST uname $USER"
 spawn ssh $USER@$HOST
 log_user 0
 expect "assword:"
-send "$PASS\r"
+send "$PASS"
 log_user 1
+send "\r"
 send "\r"
 interact

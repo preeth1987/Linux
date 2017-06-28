@@ -27,12 +27,26 @@ else
 	exit
 fi
 
+#Works only for 6 nodes currently.
+lineCount=`grep -v "^#" $CSVFILE | wc -l`
+echo "Line Count: $lineCount"
+if [ $lineCount -gt 6 ] ; then
+	echo "%Error: Script works currently only for 6 nodes in topology"
+	exit
+fi
+
 index=1
 x=0
 y=0
 orientation=0 #right=1 or down=0
 for i in `cut -d',' -f1 $CSVFILE`
 do
+	if [[ $i == \#* ]] ;
+	then
+		echo "Skipping $i"
+		index=$(expr $index + 1);
+		continue;
+	fi
 	echo "Telnet to $i $x X $y ..."
 	IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 	NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
