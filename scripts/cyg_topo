@@ -27,6 +27,8 @@ else
 	exit
 fi
 
+echo "Will spawn $MYTTY terminal depending on below selection"
+
 echo "0) ALL"
 select NODE in `cut -d',' -f1 $CSVFILE`;
 do
@@ -39,7 +41,7 @@ do
 			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
 			echo "NODE: $NODE : IP $IP"
-			mintty --title "$2_$NODE" --exec telnet $IP &
+			$MYTTY --title "$2_$NODE" --exec telnet $IP &
 			index=$(expr $index + 1);
 		done
 		break; 
@@ -47,6 +49,6 @@ do
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
 		echo "console $IP"
-		mintty -s 114,19 --title "$2_$NODE" --exec telnet $IP &
+		$MYTTY -s 114,19 --title "$2_$NODE" --exec telnet $IP &
 	fi
 done

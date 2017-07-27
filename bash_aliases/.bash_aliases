@@ -13,6 +13,8 @@ alias search_replace="sed -i -- 's/searchPattern/replacePattern/g' *"
 alias agrep="find . -name '*.[ch]' | xargs grep -i $1"
 alias hgrep="find . -name '*.[h]' | xargs grep -i $1"
 alias dumpIp="cut -d',' -f3 "
+#My TTY, change according to OS
+export MYTTY=xterm
 
 alias svm='ssh_script'
 alias rpi="ssh osmc@osmc"
@@ -26,8 +28,8 @@ export EDITOR=vim
 alias ="clear"
 
 #git shortcuts
-alias cdgit='cd /home/preetham/git'
-alias gitdir='/home/preetham/git'
+alias cdgit='cd $HOME/git'
+alias gitdir="$HOME/git"
 gitco ()
 {
     git checkout $*

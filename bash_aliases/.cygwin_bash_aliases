@@ -1,2 +1,8 @@
 echo setting cygwin aliases;
+export MYTTY=mintty
 alias nterm="mintty &"
+alias mydata="cd /cygdrive/c/My_data"
+alias docs="cd /cygdrive/c/My_data/preetham/Documents"
+alias osrc="cd /cygdrive/c/My_data/preetham/src"
+alias quagga="cd /cygdrive/c/My_data/preetham/src/quagga/quagga-1.2.1"
+alias kernel4="cd /cygdrive/c/My_data/preetham/src/kernel/linux_4_x"
