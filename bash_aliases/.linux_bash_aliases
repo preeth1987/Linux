@@ -1,7 +1,6 @@
-echo setting cygwin aliases;
-export MYTTY=mintty
-export MYDATA="/cygdrive/c/My_data"
-alias nterm="mintty &"
+echo setting linux local aliases;
+export MYTTY=xterm
+export MYDATA="/mnt/hgfs/C/My_data"
 alias mydata="cd $MYDATA"
 alias docs="cd $MYDATA/preetham/Documents"
 alias osrc="cd $MYDATA/preetham/src"
