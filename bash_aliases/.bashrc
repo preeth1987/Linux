@@ -123,12 +123,13 @@ if [ "$isWin" ]; then
 		if [ -f ~/private/.mycreds ]; then
 			. ~/private/.mycreds
 		fi
-	else
-		if [ -f ~/git/Linux/bash_aliases/.linux_bash_aliases ]; then
-			if [ -f ~/private/.mycreds ]; then
-				. ~/git/Linux/bash_aliases/.linux_bash_aliases
-				. ~/private/.mycreds
-			fi
+	fi
+else
+	echo setting linus aliases;
+	if [ -f ~/git/Linux/bash_aliases/.linux_bash_aliases ]; then
+		if [ -f ~/private/.mycreds ]; then
+			. ~/git/Linux/bash_aliases/.linux_bash_aliases
+			. ~/private/.mycreds
 		fi
 	fi
 fi
