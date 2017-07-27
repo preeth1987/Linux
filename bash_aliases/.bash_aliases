@@ -39,6 +39,10 @@ gitci ()
     git commit $* -m "commit";
     git push
 }
+gitr ()
+{
+    git pull origin master
+}
 
 del_ssh_key() {
 	sed -i '/'$1'/d' ~/.ssh/known_hosts
