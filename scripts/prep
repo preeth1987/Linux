@@ -1,4 +1,4 @@
-!#/bin/bash
+#!/bin/bash
 
 ln -s $HOME/git/Linux/vim/.vimrc $HOME/.vimrc
 ln -s $HOME/git/Linux/bash_aliases/.bashrc $HOME/.bashrc 
