@@ -120,10 +120,15 @@ if [ "$isWin" ]; then
 	echo setting windows aliases;
 	if [ -f ~/git/Linux/bash_aliases/.cygwin_bash_aliases ]; then
 		. ~/git/Linux/bash_aliases/.cygwin_bash_aliases
+		if [ -f ~/private/.mycreds ]; then
+			. ~/private/.mycreds
+		fi
+	else
+		if [ -f ~/git/Linus/bash_aliases/.linux_bash_aliases ]; then
+			if [ -f ~/private/.mycreds ]; then
+				. ~/git/Linus/bash_aliases/.linux_bash_aliases
+				. ~/private/.mycreds
+			fi
+		fi
 	fi
-fi
-
-if [ -f ~/private/.mycreds ]; then
-	. ~/git/Linus/bash_aliases/.linux_bash_aliases
-	. ~/private/.mycreds
 fi
