@@ -124,7 +124,7 @@ if [ "$isWin" ]; then
 			. ~/private/.mycreds
 		fi
 	else
-		if [ -f ~/git/Linus/bash_aliases/.linux_bash_aliases ]; then
+		if [ -f ~/git/Linux/bash_aliases/.linux_bash_aliases ]; then
 			if [ -f ~/private/.mycreds ]; then
 				. ~/git/Linux/bash_aliases/.linux_bash_aliases
 				. ~/private/.mycreds
