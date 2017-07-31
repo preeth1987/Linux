@@ -125,7 +125,7 @@ if [ "$isWin" ]; then
 		fi
 	fi
 else
-	echo setting linus aliases;
+	echo setting linux aliases;
 	if [ -f ~/git/Linux/bash_aliases/.linux_bash_aliases ]; then
 		if [ -f ~/private/.mycreds ]; then
 			. ~/git/Linux/bash_aliases/.linux_bash_aliases
