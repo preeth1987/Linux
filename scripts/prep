@@ -1,6 +1,18 @@
 #!/bin/bash
 
+echo "Install necessary packages"
+sudo apt-get install git gcc bison flex screen cscope vim
+
+unlink $HOME/.vimrc
+unlink $HOME/.bashrc
+unlink $HOME/.sccreenrc
 ln -s $HOME/git/Linux/vim/.vimrc $HOME/.vimrc
 ln -s $HOME/git/Linux/bash_aliases/.bashrc $HOME/.bashrc 
 ln -s $HOME/git/Linux/screen/.screenrc $HOME/.screenrc
 
+mkdir -p ~/.vim/bundle
+cd ~/.vim
+git clone https://github.com/tpope/vim-pathogen.git
+
+cd ~/.vim/bundle
+git clone git://github.com/airblade/vim-gitgutter.git
