@@ -1,0 +1,733 @@
+#!/bin/perl
+
+my($program);
+my($status)=0;			# exit status
+# Default program options. Eventually, the vision is to allow these to be
+# overridden by either the command-line ala GNU indent or via a global
+# (e.g. /usr/local/etc/cstyle.conf or local ~/.cstyle.conf configuration
+# file. However, since parsing and loading either of these will,
+# undoubtably, slow the program down considerably, this will suffice for
+# the present.
+
+my(%options) = ("line-length",         120,
+		"tab-size",              4);
+
+#
+# usage()
+#
+# Description:
+#   This routine prints out the proper command line usage for this program
+#
+# Input(s):
+#   status - Flag determining what usage information will be printed and what
+#            the exit status of the program will be after the information is
+#            printed.
+#
+# Output(s):
+#   N/A
+#
+# Returns:
+#   This subroutine does not return.
+#
+sub usage {
+  my($status) = $_[0];
+  my($usage) =
+    "usage: cstyle [-c] [-h] [-n] [-p] [-t] [-v] [-C] file ...
+	-c	check continuation line indenting
+	-e	exit with status
+	-h	perform heuristic checks that are sometimes wrong
+	-n	ignore NOSTYLE directives for testing
+	-p	perform some of the more picky checks
+	-t	transition mode - don't complain about some things
+		(option to be removed 11/1/94)
+	-v	verbose
+	-C	don't check anything in header block comments\n";
+
+  print($usage);
+
+  exit($status);
+}
+
+;# Usage:
+;#      do Getopts("a:bc");  # -a takes arg. -b & -c not. Sets opt_* as a
+;#                           #  side effect.
+
+sub Getopts {
+  local($argumentative) = @_;
+  local(@args,$_,$first,$rest,$errs);
+  local($[) = 0;
+
+  $errs = 0;
+
+  @args = split( / */, $argumentative );
+
+  while(($_ = $ARGV[0]) =~ /^-(.)(.*)/) {
+    ($first,$rest) = ($1,$2);
+
+    $pos = index($argumentative,$first);
+
+    if($pos >= $[) {
+      if($args[$pos + 1] eq ":") {
+	shift(@ARGV);
+
+	if($rest eq "") {
+	  $rest = shift(@ARGV);
+	}
+
+	eval "\$opt_$first = \$rest;";
+
+      } else {
+	eval "\$opt_$first = 1";
+
+	if($rest eq "") {
+	  shift(@ARGV);
+
+	} else {
+	  $ARGV[0] = "-$rest";
+
+	}
+      }
+
+    } else {
+      print STDERR "Unknown option: $first\n";
+
+      ++$errs;
+
+      if($rest ne "") {
+	$ARGV[0] = "-$rest";
+
+      } else {
+	shift(@ARGV);
+
+      }
+    }
+  }
+
+  return($errs == 0);
+}
+
+1;
+# end of getopts.pl
+
+#
+# decode_options()
+#
+# Description:
+#   This routine steps through the command-line arguments, parsing out
+#   recognzied options.
+#
+# Input(s):
+#   N/A
+#
+# Output(s):
+#   N/A
+#
+# Returns:
+#   N/A
+#
+sub decode_options {
+
+  if (!&Getopts("cehnptvC")) {
+    usage(1);
+  }
+
+  $check_continuation = $opt_c;
+  $heuristic = $opt_h;
+  $ignore_disable = $opt_n;
+  $picky = $opt_p;
+  $transition = $opt_t;
+  $verbose = $opt_v;
+  $ignore_hdr_comment = $opt_C;
+}
+
+#
+# violation()
+#
+# Description:
+#   This routine displays, to standard error, the file path, line number
+#   and enforcement violation. If the verbose option flag is in effect,
+#   the actual text of the offending line is also displayed.
+#
+# Input(s):
+#   N/A
+#
+# Output(s):
+#   N/A
+#
+# Returns:
+#   N/A
+#
+sub violation {
+	printf($fmt, $filename, $., $_[0], $line);
+	$status = 1;
+}
+
+#
+# cstyle()
+#
+# Description:
+#   This routine performs the actual coding style checking.
+#
+# Input(s):
+#   file - Path name of the current input file being processed.
+#
+# Output(s):
+#   N/A
+#
+# Returns:
+#   N/A
+#
+sub cstyle {
+	if ($verbose) {
+		$fmt = "%s: %d: %s\n%s\n";
+	} else {
+		$fmt = "%s: %d: %s\n";
+	}
+
+	$filename = $_[0];
+
+	# Frequently used patterns for matching operations.
+
+	$typename = "(int|char|short|long|unsigned|float|double|[a-z]+_t|struct\s+\w+|union\s+\w+|FILE)";
+	$keywords = "(for|if|while|switch|sizeof|return|case)";
+
+line: while (<STDIN>) {
+	$c = chop;	# strip newline
+
+	if ($c ne "\n") {
+		violation("missing newline at end of file");
+	}
+
+	# Cache the input line in its pristine, unmodified state.
+
+	$line = $_;
+
+	# Clean-up and ignore things we don't want to check:
+	#
+	# 1) Text w/i double ("") quotes.
+
+	s/\"[^\"]*\"/\"\"/g;
+
+	# 2) Text w/i single ('') quotes.
+
+	s/\'[^\']*\'/\'\'/g;
+
+	# 3) Trailing backslashes.
+
+	s/\s*\\$//;
+
+	# Inline directives, if specified, indicate that the next line is
+	# exempt from checking.
+
+	if ($nextok) {
+		if ($okmsg) {
+			violation($okmsg);
+		}
+
+		$nextok = 0;
+		$okmsg = 0;
+
+		if (/\/\* *CSTYLED.*\*\//) {
+			/^.*\/\* *CSTYLED *(.*) *\*\/.*$/;
+			$okmsg = $1;
+			$nextok = 1;
+		}
+
+		$prev = $line;
+
+		next line;
+	}
+
+    	# Check line length
+
+	# First, a quick check to see if there is any chance of being too long.
+
+	if ($line =~ tr/\t/\t/ *
+	    ($options{"tab-size"} - 1) + length($line) >
+	    $options{"line-length"}) {
+
+	  # Confirmed. Interpolate spaces for tabs and check again.
+
+	  $eline = $line;
+
+	  1 while $eline =~ s/\t+/" " x (length($&) *
+					 $options{"tab-size"} - length($`) %
+					 $options{"tab-size"})/e;
+
+	  if (length($eline) > $options{"line-length"}) {
+	    violation("line > " . $options{"line-length"} . " characters");
+	  }
+	}
+
+	# Remember whether or not we expect to be inside a continuation line.
+
+	$in_continuation = $expect_continuation;
+
+	# Check for a proper continuation line only within functions. Blank
+	# lines and C preprocessor lines in the middle of the continuation
+	# do not count.
+
+	if ($check_continuation && $expect_continuation && $in_function &&
+	    !/^#/ && !/^\s*$/) {
+		if ($in_initialization) {
+			if (!/^$continuation_indent\S/) {
+				violation("continuation line improperly indented");
+			}
+		} else {
+
+			# Continuation line must start with white-space
+			# of previous line, plus either a tab or its
+			# space equivalent. However, do not check lines
+			# that start with a string constant since they
+			# are often shifted to the left to make them
+			# fit on the line.
+
+			if (!/^$continuation_indent    \S/ &&
+			    !/^$continuation_indent\t\S/ && !/^\s*"/) {
+				violation("continuation line improperly indented");
+			}
+		}
+		$expect_continuation = 0;
+	}
+
+	# Ignore lines immediately following /*CSTYLED*/ since this
+	# inline directive is intended to explicitly flag lines which
+	# the author knows do not or can not comply with coding style.
+
+	if (/\/\* *CSTYLED.*\*\//) {
+		/^.*\/\* *CSTYLED *(.*) *\*\/.*$/;
+		$okmsg = $1;
+		$nextok = 1;
+	}
+
+	if (/\/\/ *CSTYLED/) {
+		/^.*\/\/ *CSTYLED *(.*)$/;
+		$okmsg = $1;
+		$nextok = 1;
+	}
+
+	# Ignore entire files immediately following /*NOSTYLE*/ since
+	# this inline directive is intended to explicitly flag files
+	# which the author knows do not or can not comply with coding
+	# style.
+
+	if (/\/\* *NOSTYLE.*\*\// && $ignore_disable == 0) {
+		exit 0;
+	}
+
+    	# Are we at the beginning or ending of a function?
+
+	if (/^{$/ && $prev =~ /\)/) {
+		$in_function = 1;
+		$in_declaration = 1;
+		$in_initialization = 0;
+		$in_function_header = 0;
+		$prev = $line;
+		next line;
+	}
+
+	if (/^}$/) {
+		if (!$transition && $prev =~ /^\s*return\s*;/) {
+			$str = "unneeded return at end of function";
+			printf($fmt, $filename, $. - 1, $str, $prev);
+		}
+
+		$in_function = 0;
+		$prev = $line;
+
+		next line;
+	}
+
+	if (/^\w*\($/) {
+		$in_function_header = 1;
+	}
+
+	# Are we at the beginning or ending of an initialization?
+
+	if (/=\s*{$/) {
+		$in_initialization = 1;
+	}
+
+	if (/^\s*};$/) {
+		$in_initialization = 0;
+		$prev = $line;
+
+		next line;
+	}
+
+	# a blank line terminates the declarations within a function.
+	# XXX - but still a problem in sub-blocks.
+
+	if ($in_declaration && /^$/) {
+		$in_declaration = 0;
+	}
+
+	# Does this look like the start of a block comment?
+
+	if (/^\s*\/\*$/ || /^\s*\/\*\*$/ || /^\s*\/\*\*\s/) {
+
+		# Save some state that we are in a block comment.
+
+		$incomment = 1;
+
+		# Remember the text leading up to the block comment,
+		# transforming the start of the block comment into a
+		# single space (' '), such that the alignment of
+		# continuing block comment lines can be checked later.
+
+		s/\/\*/ /;
+		$comment_prefix = $_;
+
+		# If there's nothing but the transformed space in the
+		# text leading up to the block comment, then its a
+		# special block comment, a function header or file
+		# header block comment.
+
+		if ($comment_prefix eq " " || $comment_prefix eq " *") {
+			$inhdrcomment = 1;
+		}
+
+		$prev = $line;
+
+		next line;
+	}
+
+	# Are we still in the block comment?
+
+	if ($incomment && (/^\s*\*\// || /^\s*\**\//) || /\s*\*\/$/) {
+#	if ($incomment && !/^$comment_prefix\*/ && !/^ \*/) {
+		$incomment = 0;
+		$inhdrcomment = 0;
+	}
+
+	if ($inhdrcomment && $ignore_hdr_comment) {
+		$prev = $line;
+		next line;
+	}
+
+	# Check for errors that might occur in comments and in code.
+
+	# Check for unnecessary white-space at the end of the line.
+
+	if (/\s$/ && !/^\f$/) {
+		violation("space or tab at end of line");
+	}
+
+	if (/[^ \t(]\/\*/ && !/\w\(\/\*.*\*\/\);/) {
+		violation("comment preceded by non-blank");
+	}
+
+	# Check for interpolation of tabs with spaces.
+
+	if (/\t[ ]+\t/) {
+		violation("spaces between tabs");
+	}
+
+	if (/ [\t]+ /) {
+		violation("tabs between spaces");
+	}
+
+	if (!$transition && /^\s*\/\*./ && !/^\s*\/\*.*\*\//) {
+		if (!/^\s*\/\*\*$/) {
+			violation("improper first line of block comment");
+		}
+	}
+
+	# If we are still in a comment, skip all of the following checks
+	# since they are not applicable.
+
+	if ($incomment) {
+		$prev = $line;
+		next line;
+	}
+
+	if (/[^ \t]     / && !/".*     .*"/) {
+		violation("spaces instead of tabs");
+	}
+
+	# Allow spaces to be used to draw "pictures" in comments.
+	if (/^ / && !/^ \*[ \t\/]/ && !/^ \*$/ &&
+	    !(/^    \w/ || $in_function != 0)) {
+	    	if (!/^\s*\*\/$/) {
+			violation("indent by spaces instead of tabs");
+		}
+	}
+
+	if ((/[^(]\/\*\S/ || /^\/\*\S/) &&
+	    !(/\/\*(ARGSUSED[0-9]*|NOTREACHED|LINTLIBRARY|VARARGS[0-9]*)\*\// ||
+	    /\/\*(CONSTCOND|CONSTANTCOND|CONSTANTCONDITION|EMPTY)\*\// ||
+	    /\/\*(FALLTHRU|FALLTHROUGH|LINTED.*|PRINTFLIKE[0-9]*)\*\// ||
+	    /\/\*(PROTOLIB[0-9]*|SCANFLIKE[0-9]*|CSTYLED.*)\*\//)) {
+	    	if (!/^\s*\/\*\*$/ && !/^\s*\/\*.*@.*/ && !/\/\*\*</) {
+			violation("missing blank after open comment");
+		}
+	}
+
+	if (/\S\*\/[^)]|\S\*\/$/ &&
+	    !(/\/\*(ARGSUSED[0-9]*|NOTREACHED|LINTLIBRARY|VARARGS[0-9]*)\*\// ||
+	    /\/\*(CONSTCOND|CONSTANTCOND|CONSTANTCONDITION|EMPTY)\*\// ||
+	    /\/\*(FALLTHRU|FALLTHROUGH|LINTED.*|PRINTFLIKE[0-9]*)\*\// ||
+	    /\/\*(PROTOLIB[0-9]*|SCANFLIKE[0-9]*|CSTYLED.*)\*\//)) {
+	    	if (!/^\s*\/\*\*/ && !/^\s*\/\*\s*@.*/) {
+			violation("missing blank before close comment");
+		}
+	}
+
+	if (/\/\/\S/) {		# C++ comments
+		violation("missing blank after start comment");
+	}
+
+	# Check for unterminated single line comments, but allow them when
+	# they are used to comment out the argument list of a function
+	# declaration.
+
+	if (!$transition && /\S.*\/\*/ && !/\S.*\/\*.*\*\// && !/\(\/\*/) {
+		violation("unterminated single line comment");
+	}
+
+	if (/^#(else|endif|include)/) {
+		$prev = $line;
+		next line;
+	}
+
+	# delete any comments and check everything else.
+	s/\/\*.*\*\///g;
+	s/\/\/.*$//;		# C++ comments
+
+	# delete any trailing whitespace; we have already checked for that.
+
+	s/\s*$//;
+
+	# The following checks do not apply to text in comments.
+
+	# If it looks like an operator at the end of the line, and it is
+	# not really the end of a comment (...*/), and it is not really
+	# a label (done:), and it is not a case label (case FOO:),
+	# or we are not in a function definition (ANSI C style) and the
+	# operator is a "," (to avoid hitting "int\nfoo(\n\tint i,\n\tint j)"),
+	# or we are in a function and the operator is a
+	# "*" (to avoid hitting on "char*\nfunc()").
+
+	if ((/[-+|&\/?:=]$/ && !/\*\/$/ && !/^\s*\w*:$/ &&
+	    !/^\s\s*case\s\s*\w*:$/) ||
+	    (!$in_function_header && /,$/) ||
+	    ($in_function && /\*$/)) {
+		$expect_continuation = 1;
+		if (!$in_continuation) {
+			/^(\s*)\S/;
+			$continuation_indent = $1;
+		}
+	}
+
+	if (/[^<>\s][!<>=]=/ || /[^<>][!<>=]=\S/ ||
+	    (/[^->]>[^=>\s]/ && !/[^->]>$/) || (/[^<]<[^=<\s]/ && !/[^<]<$/) ||
+	    /[^<\s]<[^<]/ || /[^->\s]>[^>]/) {
+		violation("missing space around relational operator");
+	}
+
+	if (/\S>>=/ || /\S<<=/ || />>=\S/ || /<<=\S/ || /\S[-+*\/&|^%]=/ ||
+	    (/[^-+*\/&|^%!<>=\s]=[^=]/ && !/[^-+*\/&|^%!<>=\s]=$/) ||
+	    (/[^!<>=]=[^=\s]/ && !/[^!<>=]=$/)) {
+		# XXX - should only check this for C++ code
+		# XXX - there are probably other forms that should be allowed
+		if (!/\soperator=/) {
+			violation("missing space around assignment operator");
+		}
+	}
+
+	if (/[,;]\S/ && !/\bfor \(;;\)/) {
+		violation("comma or semicolon followed by non-blank");
+	}
+
+	# Allow "for" statements to have empty "while" clauses
+
+	if (/\s[,;]/ && !/^[\t]+;$/ && !/^\s*for \([^;]*; ;[^;]*\)/) {
+		violation("comma or semicolon preceded by blank");
+	}
+
+	if (/^\s*(&&|\|\|)/) {
+		violation("improper boolean continuation");
+	}
+
+	if (/\S   *(&&|\|\|)/ || /(&&|\|\|)   *\S/) {
+		violation("more than one space around boolean operator");
+	}
+
+	if (/\b$keywords\(/) {
+		violation("missing space between keyword and paren");
+	}
+
+	if (!$transition) {
+		if (/\b$keywords\s\s+\(/ && !/^#if\s+\(/) {
+			violation("extra space between keyword and paren");
+		}
+
+		# try to detect "func (x)" but not "if (x)" or
+		# "#define foo (x)" or "int (*func)();"
+
+		if (/\w\s\(/) {
+			$s = $_;
+
+			# Strip off the one keyword that could be on the line
+			s/\b$keywords\s\(/XXX(/;
+			s/^#define\s+\w+\s+\(/XXX(/;
+
+			# Strip off all the instances of "sizeof ("
+			s/\bsizeof\s\(/XXX(/g;
+
+			# Do not match things like "void (*f)();"
+			s/\w\s\(+\*/XXX(*/g;
+
+			if (/\w\s\(/) {
+				violation("extra space between function name and left paren");
+			}
+
+			$_ = $s;
+		}
+
+		# try to detect "int foo(x)", but not "extern int foo(x);"
+		# XXX - this still trips over too many legitimate things,
+		# like "int foo(x,\n\ty);"
+#		if (/^(\w+(\s|\*)+)+\w+\(/ && !/\)[;,](\s|)*$/ &&
+#		    !/^(extern|static)\b/) {
+#			violation("return type of function not on separate line");
+#		}
+
+		# this is a close approximation
+
+		if (/^(\w+(\s|\*)+)+\w+\(.*\)(\s|)*$/ &&
+		    !/^(extern|static)\b/) {
+			violation("return type of function not on separate line");
+		}
+	}
+
+	if (/^\s*return\W[^;]*;/ && !/^\s*return\s*\(.*\);/) {
+		violation("unparenthesized return expression");
+	}
+
+	if (/\bsizeof\b/ && !/\bsizeof\s*\(.*\)/) {
+		violation("unparenthesized sizeof expression");
+	}
+
+	if (/\(\s/) {
+		violation("whitespace after left paren");
+	}
+
+	# Allow "for" statements to have empty "continue" clauses
+
+	if (/\s\)/ && !/^\s*for \([^;]*;[^;]*; \)/) {
+		violation("whitespace before right paren");
+	}
+
+	if (/^\s*\(void\)[^ ]/) {
+		violation("missing space after (void) cast");
+	}
+
+	if (!$transition) {
+		if (/\S{/ && !/{{/ && !/\@\{/) {
+			violation("missing space before left brace");
+		}
+
+		if ($in_function && /^\s+{/ &&
+		    ($prev =~ /\)\s*$/ || $prev =~ /\bstruct\s+\w+$/)) {
+			violation("left brace starting a line");
+		}
+
+		if (/}(else|while)/) {
+			violation("missing space after right brace");
+		}
+
+		if (/}\s\s+(else|while)/) {
+			violation("extra space after right brace");
+		}
+
+		if (/\b_VOID\b|\bVOID\b|\bSTATIC\b/) {
+			violation("obsolete use of VOID or STATIC");
+		}
+
+		if (/\b$typename\*/o) {
+			violation("missing space between type name and *");
+		}
+
+		if (/^\s+#/) {
+			violation("preprocessor statement not in column 1");
+		}
+
+		if (/^#\s/) {
+			violation("blank after preprocessor #");
+		}
+
+		if (/!\s*(strcmp|strncmp|bcmp)\s*\(/) {
+			violation("Boolean ! with comparison functions");
+		}
+	}
+
+	if ($picky) {
+		if (/\($typename( \*+)?\)\s/o &&
+		    !/sizeof\s*\($typename( \*)?\)\s/o) {
+			violation("space after cast");
+		}
+		if (/\b$typename\s*\*\s/o) {
+			violation("unary * followed by space");
+		}
+	}
+
+	if ($heuristic) {
+		# cannot check this everywhere due to "struct {\n...\n} foo;"
+		if ($in_function && !$in_declaration &&
+		    /}./ && !/}\s+=/ && !/{.*}[;,]$/ && !/}(\s|)*$/ &&
+		    !/} (else|while)/ && !/}}/) {
+			violation("possible bad text following right brace");
+		}
+		# cannot check this because sub-blocks in
+		# the middle of code are ok
+		if ($in_function && /^\s+{/) {
+			violation("possible left brace starting a line");
+		}
+	}
+
+	# Check to ensure that else keywords are preceded by a right brace
+	# ('}') on the same line when used.
+
+	if (/^\s*else/) {
+	    if ($prev =~ /^\s*\}$/) {
+	        violation("else and right brace not on the same line");
+	    }
+	}
+
+	$prev = $line;
+  }
+
+  # Ensure that there are no blank lines at the end of the file.
+
+  if ($prev eq "") {
+    violation("last line in file is blank");
+  }
+
+  return;
+}
+
+#
+# Main program body
+#
+{
+  my($file);
+
+  decode_options();
+
+  # Work on each file specified on the command line.
+
+  if ($#ARGV >= 0) {
+      foreach $file (@ARGV) {
+	  if (!open(STDIN, $file)) {
+	      printf("%s: can not open\n", $file);
+	  } else {
+	      &cstyle($file);
+	      close(STDIN);
+	  }
+      }
+  } else {
+    &cstyle("<stdin>");
+  }
+  exit($status) if ($opt_e);
+}
