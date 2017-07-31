@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo "Running startup script"
+
+isVirtual=`grep -i "flags.*hypervisor" /proc/cpuinfo | wc -l`
+
+echo "Virtual: $isVirtual"
+
+if [ "$isVirtual" == "1" ]; then
+	echo "running on single hypervisor, should be my local machine.."
+	cMounted=`grep -i "C_DRIVE" /etc/mtab | wc -l`
+	if [ "$cMounted" == "1" ]; then
+		echo "C_DRIVE already mounted"
+	else
+		sudo mkdir -p /mnt/C
+		sudo mount -t vboxsf C_DRIVE /mnt/C
+	fi
+fi
+
+exit
