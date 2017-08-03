@@ -1,7 +1,8 @@
 #!/bin/bash
 
 echo "Install necessary packages"
-sudo apt-get install git gcc bison flex screen cscope vim
+sudo apt-get install git gcc bison flex screen cscope vim build-essential module-assistant iperf
+sudo m-a prepare
 
 unlink $HOME/.vimrc
 unlink $HOME/.bashrc

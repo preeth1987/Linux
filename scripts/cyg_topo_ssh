@@ -1,0 +1,54 @@
+#!/bin/bash
+#Topology CSV to be in format NAME,Console,MGMT IP
+
+if [ $# -lt 2 ]; then
+	echo "Usage: cyg_topo <topology> <console/mgmt>"
+	echo "		 topology is csv file location"
+	exit
+fi
+
+CSVFILE=$1
+
+if [ -f $CSVFILE ]; then
+	echo "Topology file $CSVFILE found"
+else
+	echo "FILE $CSVFILE not found"
+	exit
+fi
+
+if [[ "${2,,}" == c* ]]; then
+	echo "Console Connection"
+	column=2;
+elif [[ "${2,,}" == m* ]]; then
+	echo "MGMT connection"
+	column=3;
+else
+	echo "%Error: Invalid connection type mentioned. Select console/mgmt"
+	exit
+fi
+
+echo "Will spawn $MYTTY terminal depending on below selection"
+
+echo "0) ALL"
+select NODE in `cut -d',' -f1 $CSVFILE`;
+do
+	echo "you selected $NODE";
+	if [ "$REPLY" = "0" ] ; then 
+		index=1
+		for i in `cut -d',' -f1 $CSVFILE`
+		do
+			echo "ssh to $i..."
+			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
+			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
+			echo "NODE: $NODE : IP $IP"
+			$MYTTY --title "$2_$NODE" --exec ssh $IP &
+			index=$(expr $index + 1);
+		done
+		break; 
+	fi
+	if [ -n $NODE ] ; then
+		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
+		echo "console $IP"
+		$MYTTY -s 114,19 --title "$2_$NODE" --exec ssh $IP &
+	fi
+done
