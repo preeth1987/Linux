@@ -2,7 +2,7 @@ echo setting cygwin aliases;
 export MYTTY=mintty
 export MYDATA="/cygdrive/c/My_data"
 alias nterm="mintty &"
-alias script="cd $HOME/git/Linux/scripts"
+alias cdscript="cd $HOME/git/Linux/scripts"
 alias mydata="cd $MYDATA"
 alias docs="cd $MYDATA/preetham/Documents"
 alias osrc="cd $MYDATA/preetham/src"
