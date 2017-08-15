@@ -30,6 +30,7 @@ alias ="clear"
 #git shortcuts
 alias cdgit='cd $HOME/git'
 alias gitdir="$HOME/git"
+alias gits="git status"
 gitco ()
 {
     git checkout $*
