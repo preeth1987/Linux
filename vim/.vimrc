@@ -70,8 +70,11 @@ if has("cscope")
     " if you want the reverse search order.
     set csto=0
 
+"    let csfn = GetCscopeFileName()
+"    let dname = fnamemodify(csfn, ":s?/cscope.out??")
+
     " add any cscope database in current directory
-    if filereadable("~/cscope_xp/cscope.out")
+    if filereadable("~/cscope/cscope.out")
 	echo "add cscope"
         cs add ~/cscope
     " else add the database pointed to by environment variable 
