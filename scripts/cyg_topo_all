@@ -51,7 +51,7 @@ do
 	IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 	NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
 	echo "NODE: $NODE : IP $IP"
-	$MYTTY -p $x,$y -s 114,18 --title "$2_$NODE" --exec telnet $IP &
+	$MYTTY -p $x,$y -s 114,18 --Title "$2_$NODE" --exec telnet $IP &
 	index=$(expr $index + 1);
 	if [ $orientation -eq 1 ] ; then
 		y=$(expr $y + 350);

@@ -1,5 +1,5 @@
 #!/bin/bash
-#Topology CSV to be in format NAME,Console,MGMT IP
+#Topology CSV to be in format NAME,Console,MGMT IP,ssh username, ssh password
 
 if [ $# -lt 2 ]; then
 	echo "Usage: cyg_topo <topology> <console/mgmt>"
@@ -27,6 +27,9 @@ else
 	exit
 fi
 
+unameColumn=$(expr $column + 1);
+passwdColumn=$(expr $column + 2);
+
 echo "Will spawn $MYTTY terminal depending on below selection"
 
 echo "0) ALL"
@@ -40,15 +43,19 @@ do
 			echo "ssh to $i..."
 			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
-			echo "NODE: $NODE : IP $IP"
-			$MYTTY --title "$2_$NODE" --exec ssh $IP &
+			UNAME=`sed -n "$index"p $CSVFILE | cut -d',' -f$unameColumn -`;
+			PASSWD=`sed -n "$index"p $CSVFILE | cut -d',' -f$passwdColumn -`;
+			echo "NODE: $NODE : IP $IP "
+			$MYTTY --Title "$2_$NODE" --exec ssh $IP &
 			index=$(expr $index + 1);
 		done
 		break; 
 	fi
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
-		echo "console $IP"
-		$MYTTY -s 114,19 --title "$2_$NODE" --exec ssh $IP &
+		UNAME=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$unameColumn -`;
+		PASSWD=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$passwdColumn -`;
+		echo "console $IP "
+		$MYTTY -s 114,19 --Title "$2_$NODE" --exec ssh $UNAME@$IP &
 	fi
 done
