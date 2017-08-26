@@ -2,6 +2,7 @@
 
 echo "Install necessary packages"
 sudo apt-get install git gcc bison flex screen cscope vim build-essential module-assistant iperf libncurses5-dev make exuberant-ctags bc libssl-dev curl svn
+#sudo apt-get install lttng-tools
 sudo m-a prepare
 
 unlink $HOME/.vimrc

@@ -12,7 +12,7 @@ termcapinfo xterm|xterms|xs|rxvt ti@:te@
 defbce "on"
 
 # Enable 256 color term
-term xterm-256color
+#term xterm-256color
 
 # Cache 30000 lines for scroll back
 defscrollback 30000

@@ -49,7 +49,7 @@ do
 			$MYTTY --Title "$2_$NODE" --exec ssh $IP &
 			index=$(expr $index + 1);
 		done
-		break; 
+		continue; 
 	fi
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
