@@ -98,7 +98,7 @@ fi
 set -o vi
 set -o emacs
 
-if [ -f /usr/atria/bin/cleartool ]; then
+#if [ -f /usr/atria/bin/cleartool ]; then
 
 	# Brocade specific Alias definitions.
 	# ~/.brcd_bash_aliases, instead of adding them here directly.
@@ -108,12 +108,12 @@ if [ -f /usr/atria/bin/cleartool ]; then
 		. ~/.brcd_bash_aliases
 	fi
 
-	nosPwv=`cleartool pwv|grep nos`
-	if [ "$nosPwv" ]; then
-		echo Setting CSCOPE_DB=$HOME/cscope;
-		export CSCOPE_DB=$HOME/cscope;
-	fi
-fi
+#	nosPwv=`cleartool pwv|grep nos`
+#	if [ "$nosPwv" ]; then
+#		echo Setting CSCOPE_DB=$HOME/cscope;
+#		export CSCOPE_DB=$HOME/cscope;
+#	fi
+#fi
 
 isWin=`uname | grep -i cygwin`
 if [ "$isWin" ]; then
