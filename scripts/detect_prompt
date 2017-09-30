@@ -1,0 +1,142 @@
+#! /bin/env expect
+
+package require Expect
+
+#escapes specials in regular expressions
+proc reescape {char} {
+    if {$char in [list $ ( * + . ? \[ \\ ^ \{ ]} {
+        return \\$char
+    } else {
+        return $char
+    }
+}
+
+proc classify {char} {
+    if {[string length $char] > 1} {
+        error "string must contain only one character"
+    }
+    set classes [list lower upper punct digit space control print]
+    foreach class $classes {
+        if {[string is $class -strict $char]} {
+            return $class
+        }
+    }
+    error "no class for: ${char}"
+}
+
+proc segment {data} {
+    set now {}
+    set segments [list]
+    set segment {} 
+    set length [string length $data]
+    set classes [list lower upper punct digit space control]
+    foreach char [split $data {}] {
+        set class [classify $char]
+        if {[string is $class $char]} {
+            if {$class ne $now} {
+                set now $class
+                if {$segment ne {}} {
+                    lappend segments $segment
+                    set segment {}
+                }
+                set segment $class
+            }
+        }
+    }
+    if {$segment ne {}} {
+        lappend segments $class 
+    }
+    return $segments
+}
+
+proc detect_prompt {{collect 10}} {
+    global timeout
+    set savedtimeout $timeout
+    set timeout 1
+    set prompts [list]
+    set pattern {}
+    #special pattern that clears buffer.  See manual for details
+    send \r
+    expect ?* {
+        set output $expect_out(buffer)
+        append prompt $output
+        exp_continue
+    } timeout {
+        if {$prompt eq {}} {
+            if {[incr tries] > 240} {
+                send_user "giving up!  Could not determine prompt\n"
+            } else {
+                send \r
+                exp_continue
+            }
+        } else {
+            #convert to classes
+            set newpattern [segment $prompt]
+            if {$newpattern eq $pattern} {
+                lappend prompts $prompt
+                set prompt {}
+            } else {
+                set prompts [list]
+                set pattern $newpattern
+            }
+            if {[llength $prompts] < $collect} {
+                exp_continue
+            }
+        }
+    }
+    #convert class to regular expression
+    foreach class $pattern {
+        append re (\[\[: $class :]]+)
+    }
+    #verify that the regular expression works for all captured prompts
+    set matchsets [dict create]
+    foreach prompt $prompts {
+        if {[set length [llength [set match [regexp -inline $re $prompt]]]]} {
+            for {set i 1} {$i<$length} {incr i} {
+                dict lappend matchsets [expr {$i-1}] [lindex $match $i]
+            }
+            continue
+        }
+        error "prompt does not match generated pattern:\n$prompt\n$re"
+    }
+
+    #create the final regular expression, using either literals or character
+    #classes, as needed.
+    set re {}
+    foreach key [lsort -real [dict keys $matchsets]] {
+        set matches [dict get $matchsets $key]
+        set match [lindex $matches 0]
+        if {[string is integer -strict $match]} {
+            #always use a class pattern for digits
+            append re \[\[:digit:]]+
+        } elseif {[lsearch -not $matches $match] < 0} {
+            #the literal characters instead of a class pattern in this case
+            foreach char [split $match {}] {
+                append re [reescape $char]
+            }
+        } else { 
+            #the class pattern in this case
+            append re \[\[: [lindex $pattern $key] :]]+
+        }
+    }
+    set timeout $savedtimeout
+    return $re
+}
+
+
+#spawn bash -i 
+#send {PS1='x\r\n\j\r\n\t@\u\@]\#]]]'}
+#send \r
+#spice up the output for some extra challenge:
+#send "echo On peril of my lyf, I shal nat lye\r"
+#set prompt [detect_prompt 2]
+#send \r
+#after 1000
+#expect -re $prompt {
+#    send "echo congratulations!\r"
+#	send_user "\nPrompt is : $prompt\n"
+#}
+#set timeout 1
+#expect timeout {
+#    send_user \n
+#}
