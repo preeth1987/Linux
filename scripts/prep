@@ -22,6 +22,7 @@ mkdir -p ~/.vim/bundle/vim-gitgutter/autoload
 mkdir -p ~/.vim/bundle/vim-gitgutter/plugin
 cd ~/.vim/bundle/vim-gitgutter/plugin
 wget --no-check-certificate https://raw.githubusercontent.com/airblade/vim-gitgutter/master/plugin/gitgutter.vim
+wget --no-check-certificate https://raw.githubusercontent.com/tpope/vim-fugitive/master/plugin/fugitive.vim
 cd ~/.vim/bundle/vim-gitgutter/autoload
 svn export https://github.com/airblade/vim-gitgutter/trunk/autoload/gitgutter
 wget --no-check-certificate https://raw.githubusercontent.com/airblade/vim-gitgutter/master/autoload/gitgutter.vim
