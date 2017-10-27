@@ -4,6 +4,7 @@ export SCRIPT_DIR=$HOME/git/Linux/scripts
 export PATH=$PATH:$SCRIPT_DIR
 alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1024;tot=tot+\$1;printf \"%dMB -> %s\n\",size,\$2 } END { printf \"Total: %dKB\n\", tot }'"
 alias tip="cat ~/tip | grep -i $1"
+alias lm="find -printf \"%TY-%Tm-%Td %TT %p\n\" | sort -n"
 #alias ll="ls -al | pg"
 alias la='ls -A'
 alias l='ls -CF'
