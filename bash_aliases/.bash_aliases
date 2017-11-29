@@ -17,8 +17,11 @@ alias dumpIp="cut -d',' -f3 "
 #My TTY, change according to OS
 export MYTTY=xterm
 
+#SERVER/VM configuration
 alias svm='ssh $USER@$VM'
 alias svm1='ssh $USER1@$VM1'
+
+#RPI
 alias rpi="ssh osmc@osmc"
 
 #vim aliases
