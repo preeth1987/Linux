@@ -1,3 +1,5 @@
+"" Set terminal as xterm so that below mappings work
+set term=xterm
 """" START OF PLUGINS
 
 execute pathogen#infect()
