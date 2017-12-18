@@ -43,6 +43,9 @@ sendToAll() {
 alias cdgit='cd $HOME/git'
 alias gitdir="$HOME/git"
 alias gits="git status"
+alias gitss="git status -s"
+alias glsco='git diff --name-only'
+alias gitreset='git reset --hard HEAD'
 gitco ()
 {
     git checkout $*
@@ -64,9 +67,14 @@ gitst ()
 {
 	git checkout -b stable $*
 }
-alias glsco='git diff --name-only'
-alias gitdiff='git diff'
-alias gitreset='git reset --hard HEAD'
+gvdiffl ()
+{
+	git difftool master $*
+}
+gvdiff ()
+{
+	git difftool $*
+}
 gpatch ()
 {
 	patch -p1 --merge < $*

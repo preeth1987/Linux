@@ -26,3 +26,13 @@ wget --no-check-certificate https://raw.githubusercontent.com/tpope/vim-fugitive
 cd ~/.vim/bundle/vim-gitgutter/autoload
 svn export https://github.com/airblade/vim-gitgutter/trunk/autoload/gitgutter
 wget --no-check-certificate https://raw.githubusercontent.com/airblade/vim-gitgutter/master/autoload/gitgutter.vim
+
+cd $HOME/.vim/bundle
+git clone https://github.com/tpope/vim-fugitive.git
+
+if [ -f $HOME/.gitconfig ]; then
+	echo "[diff]" >> $HOME/.gitconfig
+	echo "	tool = vimdiff" >> $HOME/.gitconfig
+	echo "[difftool]" >> $HOME/.gitconfig
+	echo "	prompt = false" >> $HOME/.gitconfig
+fi
