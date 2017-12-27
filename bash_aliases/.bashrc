@@ -107,6 +107,7 @@ set -o emacs
 	# See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
 	if [ -f ~/.brcd_bash_aliases ]; then
+		echo "sourcing official aliases"
 		. ~/.brcd_bash_aliases
 	fi
 
