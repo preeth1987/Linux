@@ -58,6 +58,7 @@ gitci ()
 gitr ()
 {
     git pull origin master
+	git pull origin
 }
 gitlt ()
 {
@@ -78,4 +79,16 @@ gvdiff ()
 gpatch ()
 {
 	patch -p1 --merge < $*
+}
+ghist ()
+{
+	git log --pretty=format:"%h - %an, %ar : %s"
+}
+ghist1 ()
+{
+	git log --stat
+}
+ghist2 ()
+{
+	git log -p -2
 }
