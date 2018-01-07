@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+for i in `cat $HOME/cap/pv`
+do
+	echo "For view : $i"
+	#lsco="cd $i && /tools/bin/git ls-files -m"
+	lsco="cd $i && /tools/bin/git status -s | awk -F ' ' '\{print \$2\}'"
+
+	path=$HOME/git_diff/
+	if [ ! -d "$path" ]; then
+		echo "Path doesnt exist.. creating dir $path ..."
+		mkdir -p $path
+	fi
+
+	file="`date +"%F_%H_%M_%s"`.txt"
+	file_prefix=$(echo $i | sed -r 's/\//_/g')
+	file=$file_prefix\_$file
+	echo $file
+	file_path=$path$file
+	recent_diff_file=$(ls -t $path$file_prefix* | head -1 | grep -v "No such")
+
+	echo "Checking for diff on $i ..."
+
+	#cofiles=`cd $i && /tools/bin/git ls-files -m`
+	cofiles=`cd $i && /tools/bin/git status -s | awk -F ' ' '{print $2}'`
+	if [ -z "$cofiles" ]
+	then
+		echo "0 files checked out in repo $i"
+		continue
+	fi
+	no_cofiles=$(echo "$cofiles" | wc -l)
+	echo "$cofiles"
+	echo "$no_cofiles file(s) checked out in repo $i"
+
+	cd $i && /tools/bin/git diff > $file_path
+	if [ -z $recent_diff_file ]
+	then
+		echo "Generating diff first time..."
+	else
+		md5sum_diff1=$(md5sum $recent_diff_file | awk '{print $1}')
+		md5sum_diff2=$(md5sum $file_path | awk '{print $1}')
+		if [ $md5sum_diff1 = $md5sum_diff2 ]
+		then
+			echo "Not generating diff file since no modification is done in repo recently : $i"
+			echo ""
+			rm $file_path
+			continue
+		fi
+	fi
+
+	echo "generating diff for $i in file : $file_path"
+	echo ""
+done
