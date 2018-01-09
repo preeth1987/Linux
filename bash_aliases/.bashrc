@@ -30,7 +30,7 @@ fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-	xterm*|vt*|screen) color_prompt=yes
+	xterm*|vt*|screen*) color_prompt=yes
 	echo "terminal $TERM"
 	;;
 esac
