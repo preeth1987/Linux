@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #Topology CSV to be in format NAME,Console,MGMT IP
 
 if [ $# -lt 2 ]; then
-	echo "Usage: cyg_topo <topology> <console/mgmt>"
+	echo "Usage: cyg_topo <topology> <console/mgmt> [log]"
 	echo "		 topology is csv file location"
 	exit
 fi
@@ -27,6 +27,15 @@ else
 	exit
 fi
 
+log=0
+if [[ "${3,,}" == l* ]]; then
+	log=1
+	ts=`date +"%d-%b-%Y_%H_%M%S"`
+	logDir=$HOME/logs/ctopo_${CSVFILE##*/}_$2_$ts
+	echo "Log path: $logDir"
+	mkdir -p $logDir
+fi
+
 echo "Will spawn $MYTTY terminal depending on below selection"
 
 echo "0) ALL"
@@ -41,7 +50,14 @@ do
 			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
 			echo "NODE: $NODE : IP $IP"
-			$MYTTY --Title "$2_$NODE" --exec telnet $IP &
+			opt="--Title "$2_$NODE""
+			if [ "$log" = "1" ] ; then
+				ts=`date +"%d-%b-%Y_%H_%M%S"`
+				logFile=$logDir/$NODE\_$ts.log
+				echo "logging to $logFile"
+				opt="$opt -l $logFile"
+			fi
+			$MYTTY $opt --exec telnet $IP &
 			index=$(expr $index + 1);
 		done
 		break; 
@@ -49,6 +65,14 @@ do
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
 		echo "console $IP"
-		$MYTTY -s 114,19 --Title "$2_$NODE" --exec telnet $IP &
+		opt="-s 114,19 --Title "$2_$NODE""
+		if [ "$log" = "1" ] ; then
+			ts=`date +"%d-%b-%Y_%H_%M%S"`
+			logFile=$logDir/$NODE\_$ts.log
+			echo "logging to $logFile"
+			opt="$opt -l $logFile"
+			opt="$opt -l $logFile"
+		fi
+		$MYTTY $opt --exec telnet $IP &
 	fi
 done

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #Topology CSV to be in format NAME,Console,MGMT IP,ssh username, ssh password
 
 if [ $# -lt 2 ]; then

@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #Topology CSV to be in format NAME,Console,MGMT IP
 
 if [ $# -lt 2 ]; then
-	echo "Usage: cyg_topo <topology> <console/mgmt>"
+	echo "Usage: cyg_topo_all <topology> <console/mgmt> [log]"
 	echo "		 topology is csv file location"
+	echo "NOTE: This currently works only for 6 windows, since window size is fixed"
+	echo "		For more number of nodes, use cyg_topo instead"
 	exit
 fi
 
@@ -35,6 +37,15 @@ if [ $lineCount -gt 6 ] ; then
 	exit
 fi
 
+log=0
+if [[ "${3,,}" == l* ]]; then
+	log=1
+	ts=`date +"%d-%b-%Y_%H_%M%S"`
+	logDir=$HOME/logs/ctopo_all_${CSVFILE##*/}_$2_$ts
+	echo "Log path: $logDir"
+	mkdir -p $logDir
+fi
+
 index=1
 x=0
 y=0
@@ -50,8 +61,15 @@ do
 	echo "Telnet to $i $x X $y ..."
 	IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 	NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
+	opt="-p $x,$y -s 114,18 --Title "$2_$NODE""
+	if [ "$log" = "1" ] ; then
+		ts=`date +"%d-%b-%Y_%H_%M%S"`
+		logFile=$logDir/$NODE\_$ts.log
+		echo "logging to $logFile"
+		opt="$opt -l $logFile"
+	fi
 	echo "NODE: $NODE : IP $IP"
-	$MYTTY -p $x,$y -s 114,18 --Title "$2_$NODE" --exec telnet $IP &
+	$MYTTY $opt --exec telnet $IP &
 	index=$(expr $index + 1);
 	if [ $orientation -eq 1 ] ; then
 		y=$(expr $y + 350);
