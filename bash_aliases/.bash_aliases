@@ -42,53 +42,7 @@ sendToAll() {
 #git shortcuts
 alias cdgit='cd $HOME/git'
 alias gitdir="$HOME/git"
-alias gits="git status"
-alias gitss="git status -s"
-alias glsco='git diff --name-only'
-alias gitreset='git reset --hard HEAD'
-gitco ()
-{
-    git checkout $*
-}
-gitci ()
-{
-    git commit $* -m "commit";
-    git push
-}
-gitr ()
-{
-    git pull origin master
-	git pull origin
-}
-gitlt ()
-{
-	git tag -l | less
-}
-gitst ()
-{
-	git checkout -b stable $*
-}
-gvdiffl ()
-{
-	git difftool master $*
-}
-gvdiff ()
-{
-	git difftool $*
-}
-gpatch ()
-{
-	patch -p1 --merge < $*
-}
-ghist ()
-{
-	git log --pretty=format:"%h - %an, %ar : %s"
-}
-ghist1 ()
-{
-	git log --stat
-}
-ghist2 ()
-{
-	git log -p -2
-}
+if [ -f $HOME/git/Linux/bash_aliases/.git_aliases ]; then
+	echo "Sourcing git aliases"
+	source $HOME/git/Linux/bash_aliases/.git_aliases
+fi

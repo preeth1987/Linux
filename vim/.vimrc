@@ -76,12 +76,19 @@ if has("cscope")
 "    let dname = fnamemodify(csfn, ":s?/cscope.out??")
 
     " add any cscope database in current directory
-    if filereadable("~/cscope/cscope.out")
-	echo "add cscope"
-        cs add ~/cscope
+	"if filereadable("~/cscope/cscope.out")
+	"echo "add cscope"
+        "cs add ~/cscope
     " else add the database pointed to by environment variable 
-    elseif $CSCOPE_DB != ""
-		"cs add $CSCOPE_DB $HOME/cscope
+	" expecting CSCOPE_DB in format "<cscope db path>;<prepend prefix path>"
+    if $CSCOPE_DB != ""
+		let db = strpart($CSCOPE_DB, 0, match($CSCOPE_DB, ";"))
+		let prepend = strpart(matchstr($CSCOPE_DB, ";.*"), 1)
+		if (!empty(prepend) )
+			set nocscopeverbose
+			"echo "db: " . db . " path: " . prepend
+			exe "cs add " . db . " " . prepend
+		endif
     endif
 
     " show msg when any other cscope db added
@@ -203,3 +210,4 @@ highlight DiffAdd term=reverse cterm=bold ctermbg=green ctermfg=white
 highlight DiffChange term=reverse cterm=bold ctermbg=cyan ctermfg=black 
 highlight DiffText term=reverse cterm=bold ctermbg=gray ctermfg=black 
 highlight DiffDelete term=reverse cterm=bold ctermbg=red ctermfg=black
+set term=xterm

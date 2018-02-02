@@ -1,0 +1,143 @@
+re='^[0-9]+$'
+
+alias gits="git status"
+alias gitss="git status -s"
+alias glsco='git diff --name-only'
+alias gituncommit='git reset --soft HEAD^'
+gitco ()
+{
+    git checkout $*
+}
+gitci ()
+{
+    git commit $* -m "commit";
+    git push
+}
+gitr ()
+{
+    #git pull origin master
+	git pull --rebase
+}
+gitlt ()
+{
+	git tag -l | less
+}
+gitst ()
+{
+	git checkout -b stable $*
+}
+gvdiffl ()
+{
+	git difftool master $*
+}
+gvdiff ()
+{
+	git difftool $*
+}
+gpatch ()
+{
+	patch -p1 --merge < $*
+}
+ghist ()
+{
+	git log --pretty=format:"%h - %an, %ar : %s"
+}
+ghist1 ()
+{
+	git log --stat
+}
+ghist2 ()
+{
+	git log -p -2
+}
+
+# Log of commit messages in one line
+glog() {
+    git log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' --abbrev-commit --date=short
+}
+
+# Pulls the changes to current branch from origin and merge
+gpull() {
+	if cBranch=$(git symbolic-ref --short -q HEAD)
+	then
+		git pull origin $cBranch --rebase --prune
+	else
+		echo "not on any branch"
+	fi
+}
+
+# Updates your current branch with origin/master even when you dont have uncommitted changes
+# sync with origin/master and then put your changes back
+gfupdate() {
+	if cBranch=$(git symbolic-ref --short -q HEAD)
+	then
+		git checkout master
+		gpull
+		git checkout $cBranch
+		git rebase master
+	else
+		echo "Not on any branch"
+	fi
+}
+
+gupdate() {
+	git stash
+	gfupdate
+	git stash pop
+}
+
+
+# Commit the files (on current branch) with the given message
+# It will incluide all the files that have been modified and deleted.
+# For new files you have to manually stage them using 'git add .'
+gcommit() {
+    local message=$@
+    if [ -z "${message// }" ]
+        then echo "Commit message missing"
+    else
+        git commit -am "$message"
+    fi
+}
+
+# Regular push current branch to origin
+# It will not push the master branch
+gpush() {
+    if [ -z $1 ]
+        then echo "Need the name of the branch"
+    else
+        git push origin $1
+    fi
+}
+
+# Updates your fork from upstream master and pushes the updates to your origin fork 
+gupdateFork() {
+    git checkout master
+    git fetch upstream master
+    git merge upstream/master
+    push master
+}
+
+# Rebase your current branch for last n($1) commits
+# Its going to be interactive
+grebase() {
+    if [ -z $1 ] 
+        then val=2
+    else
+        val=$1
+    fi
+    git rebase -i HEAD~$val
+}
+
+# Force push current branch to origin
+# It will not force push the master branch
+gfpush() {
+    if [ -z $1 ]
+        then echo "Need the name of the branch"
+    else
+        if [ "$1" == "master" ]
+            then echo "Cant force push to master"
+        else    
+            git push --force-with-lease origin $1
+        fi    
+    fi
+}
