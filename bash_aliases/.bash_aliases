@@ -1,4 +1,9 @@
 #linux aliases
+#First source official aliases if present
+if [ -f $HOME/.official_bash_aliases ]; then
+	echo "sourcing official aliases"
+	. $HOME/.official_bash_aliases
+fi
 alias cdb='. ~/bin/cdb'
 export SCRIPT_DIR=$HOME/git/Linux/scripts
 export PATH=$PATH:$SCRIPT_DIR

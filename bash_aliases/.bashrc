@@ -80,11 +80,6 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 shopt -s xpg_echo
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
 if [ -f ~/git/Linux/bash_aliases/.bash_aliases ]; then
 	. ~/git/Linux/bash_aliases/.bash_aliases
 fi
@@ -99,24 +94,6 @@ fi
 # enable emacs & vi mode
 set -o vi
 set -o emacs
-
-#if [ -f /usr/atria/bin/cleartool ]; then
-
-	# Brocade specific Alias definitions.
-	# ~/.brcd_bash_aliases, instead of adding them here directly.
-	# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-	if [ -f ~/.brcd_bash_aliases ]; then
-		echo "sourcing official aliases"
-		. ~/.brcd_bash_aliases
-	fi
-
-#	nosPwv=`cleartool pwv|grep nos`
-#	if [ "$nosPwv" ]; then
-#		echo Setting CSCOPE_DB=$HOME/cscope;
-#		export CSCOPE_DB=$HOME/cscope;
-#	fi
-#fi
 
 isWin=`uname | grep -i cygwin`
 if [ "$isWin" ]; then
