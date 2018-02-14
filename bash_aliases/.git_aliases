@@ -56,6 +56,16 @@ glog() {
     git log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' --abbrev-commit --date=short
 }
 
+# Log of commit messages in one line
+gflog() {
+    if [ -z $1 ]
+        then echo "Need the file name"
+    else
+        git log -p $1
+		#git log -p $1 --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' --abbrev-commit --date=short
+    fi
+}
+
 # Pulls the changes to current branch from origin and merge
 gpull() {
 	if cBranch=$(git symbolic-ref --short -q HEAD)
