@@ -7,9 +7,10 @@ sudo m-a prepare
 
 unlink $HOME/.vimrc
 unlink $HOME/.bashrc
-unlink $HOME/.sccreenrc
+unlink $HOME/.screenrc
 ln -s $HOME/git/Linux/vim/.vimrc $HOME/.vimrc
 ln -s $HOME/git/Linux/bash_aliases/.bashrc $HOME/.bashrc 
+ln -s $HOME/git/Linux/bash_aliases/.bash_profile $HOME/.bash_profile
 ln -s $HOME/git/Linux/screen/.screenrc $HOME/.screenrc
 
 mkdir -p ~/.vim/bundle
