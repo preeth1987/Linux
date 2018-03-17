@@ -11,6 +11,7 @@ alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1
 alias tip="cat ~/tip | grep -i $1"
 alias lm="find -printf \"%TY-%Tm-%Td %TT %p\n\" | sort -n"
 #alias ll="ls -al | pg"
+alias ls='ls --color=auto'
 alias la='ls -A'
 alias l='ls -CF'
 alias t='telnet'

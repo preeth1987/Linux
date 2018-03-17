@@ -60,7 +60,7 @@ do
 			$MYTTY $opt --exec telnet $IP &
 			index=$(expr $index + 1);
 		done
-		break; 
+		#break; 
 	fi
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
