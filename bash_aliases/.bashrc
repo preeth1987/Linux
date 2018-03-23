@@ -69,9 +69,9 @@ esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-	test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-	alias ls='ls --color=none'
-#	alias ls='ls --color=auto'
+#	test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+#	alias ls='ls --color=none'
+	alias ls='ls --color=auto'
 	alias dir='dir --color=auto'
 	alias vdir='vdir --color=auto'
 	alias grep='grep --color=auto'
@@ -95,8 +95,8 @@ fi
 set -o vi
 set -o emacs
 
-isWin=`uname | grep -i cygwin`
-if [ "$isWin" ]; then
+#isWin=`uname | grep -i cygwin`
+if [[ "$OS" == *Window* ]]; then
 	echo setting windows aliases;
 	if [ -f ~/git/Linux/bash_aliases/.cygwin_bash_aliases ]; then
 		. ~/git/Linux/bash_aliases/.cygwin_bash_aliases

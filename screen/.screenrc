@@ -1,4 +1,11 @@
 #My Linux screenrc
+startup_message off
+#caption always
+msgwait 15
+msgminwait 2
+defflow off
+vbell on
+
 # Allow bold colors
 attrcolor b ".I"
 
@@ -13,15 +20,33 @@ defbce "on"
 
 # Enable 256 color term
 #term xterm-256color
+term screen-256color
 
 # Cache 30000 lines for scroll back
 defscrollback 30000
 
+hardstatus on
 hardstatus alwayslastline 
 # Very nice tabbed colored hardstatus line
 hardstatus string '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG} %H%{KW}|%{KY}%101`%{KW}|%D %M %d %Y%{= Kc} %C%A%{-}'
+
+# bash will be replaced by the running command 
+#setenv PROMPT_COMMAND 'echo -n -e "\033k\033\134"'
+#shell $SHELL
+shelltitle '$ |'
+
+activity "Activity in window %n%="
 
 # Hide hardstatus: ctrl-a f 
 bind f eval "hardstatus ignore"
 # Show hardstatus: ctrl-a F
 bind F eval "hardstatus alwayslastline"
+
+#Start with 3 screens always
+screen 3
+screen 2
+screen 1
+
+#Page UP & Down binding
+bindkey 5~ eval "copy" "stuff ^U"
+bindkey 6~ eval "copy" "stuff ^D"
