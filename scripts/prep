@@ -13,8 +13,11 @@ ln -s $HOME/git/Linux/bash_aliases/.bashrc $HOME/.bashrc
 ln -s $HOME/git/Linux/bash_aliases/.bash_profile $HOME/.bash_profile
 ln -s $HOME/git/Linux/screen/.screenrc $HOME/.screenrc
 
+#Vim plugins
 mkdir -p ~/.vim/bundle
 mkdir -p ~/.vim/autoload
+mkdir -p ~/.vim/plugin
+
 cd ~/.vim/autoload
 wget --no-check-certificate https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim 
 
@@ -30,6 +33,9 @@ wget --no-check-certificate https://raw.githubusercontent.com/airblade/vim-gitgu
 
 cd $HOME/.vim/bundle
 git clone https://github.com/tpope/vim-fugitive.git
+
+ln -s $HOME/git/Linux/vim/highlights.vim ~/.vim/plugin/highlights.vim
+ln -s $HOME/git/Linux/vim/highlights.csv ~/.vim/plugin/highlights.csv
 
 if [ -f $HOME/.gitconfig ]; then
 	echo "[diff]" >> $HOME/.gitconfig

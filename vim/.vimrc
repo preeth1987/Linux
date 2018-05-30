@@ -31,6 +31,7 @@ set smd
 set showcmd
 set showmatch
 set nofoldenable
+set backspace=indent,eol,start
 set foldmethod=indent
 set diffopt+=iwhite
 

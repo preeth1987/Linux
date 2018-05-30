@@ -62,7 +62,7 @@ int main( int argc, char **argv)
 
 	self.sin_family = AF_INET ;
 	self.sin_port	= htons(atoi(argv[2]));
-	self.sin_addr.s_addr = htonl(INADDR_ANY);
+	self.sin_addr.s_addr = inet_addr("192.168.14.1");
 
 	ret = bind(sd, (struct sockaddr *) &self, sizeof(self));
 	if(ret < 0 ) 

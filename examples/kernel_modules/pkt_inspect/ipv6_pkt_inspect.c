@@ -8,6 +8,7 @@
 #include <linux/netfilter_ipv6.h>
 #include "../kfile_ops.h"
 #include <linux/time.h>
+#include <net/ip6_fib.h>
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Preetham");
@@ -46,9 +47,10 @@ static unsigned int ipv6_pkt_check(unsigned int hooknum, struct sk_buff *skb,
 
 	get_cur_time(&hr, &min, &sec);
 
-    indev = in ? in->name : nulldevname;
-    //indev = skb->dev ? skb->dev->name : nulldevname;
+    //indev = in ? in->name : nulldevname;
+    indev = skb->dev ? skb->dev->name : nulldevname;
 
+	if (strncmp(indev, "eth", 3) != 0) {
 	sprintf(buff, "\n[%d:%d:%d] IPv6 PKT: v%d, %x:%x:%x:%x -> %x:%x:%x:%x, proto: %u, dev: %s\n" 
 			"\tSKB INFO: len: %u d-len %u size %u\n"
 			"\tdata %p head-%p tail-%p end-%p\n"
@@ -59,14 +61,29 @@ static unsigned int ipv6_pkt_check(unsigned int hooknum, struct sk_buff *skb,
 			ip6h->nexthdr, indev, skb->len, skb->data_len, skb->truesize, skb->data, skb->head, skb->tail, skb->end, 
 			skb->pkt_type, ntohs(skb->protocol), skb->transport_header, skb->network_header);
 
-	//pr_info("%s", buff);
+	pr_info("%s", buff);
 
+	if (skb_dst(skb) && ip6_dst_idev(skb_dst(skb)))
+		pr_info("dst_if: %x\n", ip6_dst_idev(skb_dst(skb))->dev->ifindex);
+	else {
+		if (skb_dst(skb))
+			pr_info("ip6_dst_idev: %p\n", ip6_dst_idev(skb_dst(skb)));
+		else if (!skb_dst(skb))
+			pr_info("skb dst%p\n", skb_dst(skb));
+	}
+
+#if 0
 	ret = file_write(fp, 0, buff, strlen(buff)); 
 	if ( ret < 0) {
 		printk(KERN_ERR "%s:%d Error writing to file\n", __FUNCTION__, __LINE__ );
 		goto out;
 	}
-
+#endif
+	if (strncmp(indev,"vrf-",4) == 0)
+	{
+		goto drop_out;
+	}
+	}
 #if 0
 	struct dst_entry *dst = skb_dst(skb);
 	sprintf(buff, "\tSKB INFO: skb: %p sk: %p dev: %p len: %u d-len %u size %u \n\t data %p head-%p tail-%p end-%p type 0x%x proto 0x%x",
@@ -81,6 +98,8 @@ static unsigned int ipv6_pkt_check(unsigned int hooknum, struct sk_buff *skb,
 #endif
 out:
     return NF_ACCEPT;
+drop_out:
+	return NF_DROP;
 }
 
 static struct nf_hook_ops hook_ops[] __read_mostly = {

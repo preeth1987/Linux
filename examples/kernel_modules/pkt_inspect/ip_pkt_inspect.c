@@ -47,21 +47,20 @@ static unsigned int ip_pkt_check(unsigned int hooknum, struct sk_buff *skb,
 
 	get_cur_time(&hr, &min, &sec);
 
-    indev = in ? in->name : nulldevname;
-    //indev = skb->dev ? skb->dev->name : nulldevname;
+    //indev = in ? in->name : nulldevname;
+    indev = skb->dev ? skb->dev->name : nulldevname;
+	
+		sprintf(buff, "\n[%d:%d:%d] IP PKT: v%d, %x -> %x, proto: %u, dev: %s\n" 
+				"\tSKB INFO: len: %u d-len %u size %u\n"
+				"\tdata %p head-%p tail-%p end-%p\n"
+				"\ttype 0x%x proto 0x%x transport_header: %u network_header: %u\n", 
+				hr, min, sec,
+				iph->version, ntohl(iph->saddr), 
+				ntohl(iph->daddr),
+				iph->protocol, indev, skb->len, skb->data_len, skb->truesize, skb->data, skb->head, skb->tail, skb->end, 
+				skb->pkt_type, ntohs(skb->protocol), skb->transport_header, skb->network_header);
 
-	sprintf(buff, "\n[%d:%d:%d] IP PKT: v%d, %x -> %x, proto: %u, dev: %s\n" 
-			"\tSKB INFO: len: %u d-len %u size %u\n"
-			"\tdata %p head-%p tail-%p end-%p\n"
-			"\ttype 0x%x proto 0x%x transport_header: %u network_header: %u\n", 
-			hr, min, sec,
-			iph->version, ntohl(iph->saddr), 
-			ntohl(iph->daddr),
-			iph->protocol, indev, skb->len, skb->data_len, skb->truesize, skb->data, skb->head, skb->tail, skb->end, 
-			skb->pkt_type, ntohs(skb->protocol), skb->transport_header, skb->network_header);
-
-	pr_info("%s", buff);
-
+		pr_info("%s", buff);
 #if 0
 	ret = file_write(fp, 0, buff, strlen(buff)); 
 	if ( ret < 0) {
@@ -82,13 +81,15 @@ static unsigned int ip_pkt_check(unsigned int hooknum, struct sk_buff *skb,
 #endif
 out:
     return NF_ACCEPT;
+drop_out:
+	return NF_DROP;
 }
 
 static struct nf_hook_ops hook_ops[] __read_mostly = {
 	{
         .hook     = (nf_hookfn *)ip_pkt_check,
         .pf       = NFPROTO_IPV4,
-        .hooknum  = NF_INET_PRE_ROUTING,
+        .hooknum  = NF_INET_POST_ROUTING,
         //.hooknum  = NF_INET_LOCAL_IN,
         .priority = NF_IP_PRI_FIRST,
     }

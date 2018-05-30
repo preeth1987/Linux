@@ -32,7 +32,7 @@ alias rpi="ssh osmc@osmc"
 
 #vim aliases
 set -o vi
-alias vi='vim'
+#alias vi='vim'
 export EDITOR=vim
 
 #Keybindings
