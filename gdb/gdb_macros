@@ -81,3 +81,21 @@ if ($arg0->right)
 	end
 	end
 	end 
+
+define printoneentry
+p/x $arg0->key->vrf_index
+p/x $arg0->key->ipv6_address->address.address.address32
+end
+
+define printavlrecursive
+if $arg0
+set $entry = (portdb_ipv6_entry*)$arg0->info
+printoneentry $entry
+if ($arg0->left)
+	printavlrecursive $arg0->left
+end
+if ($arg0->right)
+	printavlrecursive $arg0->right
+end
+end
+end

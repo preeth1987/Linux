@@ -61,7 +61,7 @@ do
 	echo "Telnet to $i $x X $y ..."
 	IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 	NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
-	opt="-p $x,$y -s 114,18 --Title "$2_$NODE""
+	opt="-p $x,$y -s 105,17 --Title "$2_$NODE""
 	if [ "$log" = "1" ] ; then
 		ts=`date +"%d-%b-%Y_%H_%M%S"`
 		logFile=$logDir/$NODE\_$ts.log
@@ -72,11 +72,11 @@ do
 	$MYTTY $opt --exec telnet $IP &
 	index=$(expr $index + 1);
 	if [ $orientation -eq 1 ] ; then
-		y=$(expr $y + 350);
+		y=$(expr $y + 270);
 		x=0;
 		orientation=0;
 	else
-		x=$(expr $x + 952);
+		x=$(expr $x + 770);
 		orientation=1;
 	fi
 done

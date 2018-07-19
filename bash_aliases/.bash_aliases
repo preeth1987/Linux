@@ -24,11 +24,12 @@ alias dumpIp="cut -d',' -f3 "
 export MYTTY=xterm
 
 #SERVER/VM configuration
-alias svm='ssh $USER@$VM'
+alias svm='ssh $USER1@$VM1'
 alias svm1='ssh $USER1@$VM1'
 
 #RPI
 alias rpi="ssh osmc@osmc"
+alias oxu4="ssh root@oxu4"
 
 #vim aliases
 set -o vi

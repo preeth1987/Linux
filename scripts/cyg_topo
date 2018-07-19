@@ -44,13 +44,23 @@ do
 	echo "you selected $NODE";
 	if [ "$REPLY" = "0" ] ; then 
 		index=1
+		index=1
+		x=0
+		y=0
+		orientation=0 #right=1 or down=0
 		for i in `cut -d',' -f1 $CSVFILE`
 		do
+			if [[ $i == \#* ]] ;
+			then
+				echo "Skipping $i"
+				index=$(expr $index + 1);
+				continue;
+			fi
 			echo "Telnet to $i..."
 			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
 			echo "NODE: $NODE : IP $IP"
-			opt="--Title "$2_$NODE""
+			opt="-p $x,$y -s 105,17 --Title "$2_$NODE""
 			if [ "$log" = "1" ] ; then
 				ts=`date +"%d-%b-%Y_%H_%M%S"`
 				logFile=$logDir/$NODE\_$ts.log
@@ -59,13 +69,21 @@ do
 			fi
 			$MYTTY $opt --exec telnet $IP &
 			index=$(expr $index + 1);
+			if [ $orientation -eq 1 ] ; then
+				y=$(expr $y + 270);
+				x=0;
+				orientation=0;
+			else
+				x=$(expr $x + 770);
+				orientation=1;
+			fi
 		done
 		#break; 
 	fi
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
 		echo "console $IP"
-		opt="-s 114,19 --Title "$2_$NODE""
+		opt="-s 105,17 --Title "$2_$NODE""
 		if [ "$log" = "1" ] ; then
 			ts=`date +"%d-%b-%Y_%H_%M%S"`
 			logFile=$logDir/$NODE\_$ts.log
