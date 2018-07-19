@@ -4,6 +4,48 @@ alias gits="git status"
 alias gitss="git status -s"
 alias glsco='git diff --name-only'
 alias gituncommit='git reset --soft HEAD^'
+alias gcbranch='git symbolic-ref --short -q HEAD'
+alias cbranch=gcbranch
+alias glbranch='git branch'
+alias lbranch=glbranch
+alias rbranch='git branch -r'
+
+gpv() {
+	SAVED="$@"
+	set -- $( lsview )
+	export VIEW
+	select VIEW
+	do
+		if [ -n "$VIEW" ] ; then set -- $SAVED ; shift ; cd $VIEW; echo "View: $VIEW";
+			export BRANCH=$( cbranch )
+			echo "Branch: $BRANCH"
+			setup_cscope;
+			setrepo_vars; 
+			break; 
+		fi
+		if [ "$REPLY" = "0" ] ; then break ; fi
+	done
+}
+
+gpb() {
+	SAVED="$@"
+	set -- $( lbranch | grep -v "^*")
+	export BRANCH
+	select BRANCH
+	do
+		if [ -n "$BRANCH" ] ; then 
+			set -- $SAVED ; 
+			shift ; 
+			git checkout $BRANCH ;
+			echo "View: $VIEW";
+			echo "Branch: $BRANCH";
+			setup_cscope;
+			break; 
+		fi
+		if [ "$REPLY" = "0" ] ; then break ; fi
+	done
+}
+
 gitco ()
 {
     git checkout $*
@@ -68,10 +110,12 @@ gflog() {
 }
 
 # Pulls the changes to current branch from origin and merge
+# Pull is fetch + merge
 gpull() {
 	if cBranch=$(git symbolic-ref --short -q HEAD)
 	then
 		git pull origin $cBranch --rebase --prune
+		#git pull origin $cBranch
 	else
 		echo "not on any branch"
 	fi
@@ -82,10 +126,11 @@ gpull() {
 gfupdate() {
 	if cBranch=$(git symbolic-ref --short -q HEAD)
 	then
-		git checkout master
+		echo "====== Branch $cBranch ====="
+		git checkout $cBranch 
 		gpull
 		git checkout $cBranch
-		git rebase master
+		#git rebase $cBranch
 	else
 		echo "Not on any branch"
 	fi
