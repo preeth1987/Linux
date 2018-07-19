@@ -212,3 +212,18 @@ highlight DiffChange term=reverse cterm=bold ctermbg=cyan ctermfg=black
 highlight DiffText term=reverse cterm=bold ctermbg=gray ctermfg=black 
 highlight DiffDelete term=reverse cterm=bold ctermbg=red ctermfg=black
 set term=xterm
+
+" function F2 key will display the tab insertions
+nnoremap    <F2> :<C-U>setlocal lcs=tab:>-,trail:-,eol:$ list! list? <CR>
+
+call plug#begin('~/.vim/plugged')
+
+" Declare the list of plugins.
+" Plug 'whiteinge/diffconflicts'
+" Plug 'tpope/vim-fireplace'
+" Git vim fugitive plugin
+Plug 'git://github.com/tpope/vim-fugitive.git'
+" vim diff conflict tool Use cmd :DiffConflictsShowHistory
+Plug 'git://github.com/whiteinge/diffconflicts.git'
+" List ends here. Plugins become visible to Vim after this call.
+call plug#end()
