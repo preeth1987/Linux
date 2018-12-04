@@ -12,7 +12,7 @@ clean:
 
 else
 
-MODULE = ip_pkt_inspect.o
+MODULE = udpv4_sock_dump.o
 CFLAGS_$(MODULE) := -DDEBUG
 obj-m := $(MODULE)
 

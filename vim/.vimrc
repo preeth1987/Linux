@@ -11,15 +11,15 @@ filetype plugin indent on
 
 """" END OF PLUGINS
 
-syntax enable
 set showmode
 set sw=4
 set notitle
 
+set autoindent
 set softtabstop=4
 set shiftwidth=4
 set tabstop=4
-set noexpandtab
+set expandtab
 set ai
 set hls
 set ic
@@ -216,14 +216,37 @@ set term=xterm
 " function F2 key will display the tab insertions
 nnoremap    <F2> :<C-U>setlocal lcs=tab:>-,trail:-,eol:$ list! list? <CR>
 
-call plug#begin('~/.vim/plugged')
+"call plug#begin('~/.vim/plugged')
 
 " Declare the list of plugins.
 " Plug 'whiteinge/diffconflicts'
 " Plug 'tpope/vim-fireplace'
 " Git vim fugitive plugin
-Plug 'git://github.com/tpope/vim-fugitive.git'
+"Plug 'git://github.com/tpope/vim-fugitive.git'
 " vim diff conflict tool Use cmd :DiffConflictsShowHistory
-Plug 'git://github.com/whiteinge/diffconflicts.git'
+"Plug 'git://github.com/whiteinge/diffconflicts.git'
+" Python autocomplte 
+" Plug 'git://github.com/davidhalter/jedi-vim.git'
 " List ends here. Plugins become visible to Vim after this call.
-call plug#end()
+"call plug#end()
+"func Backspace()
+"  if col('.') == 1
+"    if line('.')  != 1
+"      return  "\<ESC>kA\<Del>"
+"    else
+"      return ""
+"    endif
+"  else
+"    return "\<Left>\<Del>"
+"  endif
+"endfunc
+
+"inoremap <BS> <c-r>=Backspace()<CR>
+
+syntax on
+filetype indent plugin on
+
+set tabstop=8 
+set expandtab 
+set shiftwidth=4 
+set softtabstop=4

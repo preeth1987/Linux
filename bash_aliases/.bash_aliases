@@ -12,6 +12,7 @@ alias tip="cat ~/tip | grep -i $1"
 alias lm="find -printf \"%TY-%Tm-%Td %TT %p\n\" | sort -n"
 #alias ll="ls -al | pg"
 alias ls='ls --color=auto'
+alias ls-tree='tree -L 2'
 alias la='ls -A'
 alias l='ls -CF'
 alias t='telnet'
@@ -38,6 +39,9 @@ export EDITOR=vim
 
 #Keybindings
 alias ="clear"
+
+#For vim backspace to work
+#stty erase '^?'
 
 del_ssh_key() {
 	sed -i '/'$1'/d' ~/.ssh/known_hosts
