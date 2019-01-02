@@ -39,30 +39,62 @@ int main( int argc, char **argv)
 #define BUFFERSIZE 1000
 	char buffer[BUFFERSIZE];
 
-	if(argc != 3 )
+	/*if(argc != 3 )
 	{
 		printf("udprcv <vrf> <port> \n" );
 		printf("ex:udprcv all 12334\n" );
 		return 1;
-	}
+	}*/
 
 	//sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	sd = socket(AF_INET, SOCK_DGRAM, 0);
+	sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if(sd < 0 ) {
 		perror("socket : " );
 		return -1;
 	}
 
-	if (strcmp(argv[1], "all") != 0) {
+	/*if (strcmp(argv[1], "all") != 0) {
 		ret = setsockopt(sd, SOL_SOCKET, SO_BINDTODEVICE, argv[1], strlen(argv[1]));
+	}*/
+
+
+	ret=setsockopt(sd, SOL_IP, IP_PKTINFO, &opt, sizeof(opt));
+	if(ret<0)
+	{
+		printf("socket option IP_PKTINFO set failed, %d : %s\n", ret, strerror(errno));
+		return -1;
 	}
+
+        ret=setsockopt(sd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof (opt));
+	if(ret<0)
+	{
+		printf("socket option SO_BROADCAST set failed, %d : %s\n", ret, strerror(errno));
+		return -1;
+	}
+
+        int sock_size = (1024 * 1024);
+        ret = setsockopt(sd, SOL_SOCKET, SO_RCVBUFFORCE, &sock_size, sizeof(sock_size));
+	if(ret<0)
+	{
+		printf("socket option SO_RCVBUFFORCE set failed, %d : %s\n", ret, strerror(errno));
+		return -1;
+	}
+
+        sock_size = (512 * 1024);
+        ret = setsockopt(sd, SOL_SOCKET, SO_SNDBUFFORCE, &sock_size, sizeof(sock_size));
+	if(ret<0)
+	{
+		printf("socket option SO_SNDBUFFORCE set failed, %d : %s\n", ret, strerror(errno));
+		return -1;
+	}
+        printf("sock options set\n");
 
 	bzero(&self, sizeof(self));
 	bzero(&other, sizeof(other));
 
 	self.sin_family = AF_INET ;
-	self.sin_port	= htons(atoi(argv[2]));
-	self.sin_addr.s_addr = inet_addr("192.168.14.1");
+	self.sin_port	= htons(67);
+	self.sin_addr.s_addr = 0; 
 
 	ret = bind(sd, (struct sockaddr *) &self, sizeof(self));
 	if(ret < 0 ) 
@@ -71,13 +103,7 @@ int main( int argc, char **argv)
 		close(sd);
 		return -1;
 	}
-
-	ret=setsockopt(sd, SOL_IP, IP_PKTINFO, &opt, sizeof(opt));
-	if(ret<0)
-	{
-		printf("socket option IP_PKTINFO set failed, %d : %s\n", ret, strerror(errno));
-		return -1;
-	}
+        printf("sock bind done\n");
 
 	do {
 	ret = recvfrom(sd, rbuf, sizeof(struct ip), MSG_PEEK, (struct sockaddr *)&other, (socklen_t  *) &slen);

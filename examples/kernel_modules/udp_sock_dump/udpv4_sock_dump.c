@@ -21,7 +21,7 @@ static int __init udpv4_sock_dump_init(void)
     int ret=0, i=0;
     struct sock *sk;
     struct udp_hslot *hslot;
-
+    struct timeval tv1, tv2;
     pr_info("initialize of udpv4 sock dump module\n");
 
     if (ret >= 0) {
@@ -32,6 +32,8 @@ static int __init udpv4_sock_dump_init(void)
     }
 
     pr_info("udp table mask: %d", udp_table.mask);
+
+    do_gettimeofday(&tv1);
     for (i = 0; i <= udp_table.mask; i++) {
         hslot = &udp_table.hash[i];
         sk_for_each_rcu(sk, &hslot->head) {
@@ -40,6 +42,8 @@ static int __init udpv4_sock_dump_init(void)
                     sk->sk_state, sk->sk_flags);
         }
     }
+    do_gettimeofday(&tv2);
+    pr_info("Time taken: %ld secs %ld usecs\n", (tv2.tv_sec - tv1.tv_sec), (tv2.tv_usec - tv1.tv_usec));
 
     return 0;
 }

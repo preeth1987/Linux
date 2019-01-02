@@ -33,6 +33,40 @@ static unsigned int get_cur_time(unsigned int *hr, unsigned int *min, unsigned i
 	return 1;
 }
 
+void get_info_v6(char *prefix, struct sk_buff *skb, const struct net_device *in,
+        const struct net_device *out)
+{
+
+    const char *indev;
+    //struct iphdr *iph = (struct iphdr *)skb_network_header(skb);
+    struct ipv6hdr *ip6h = (struct ipv6hdr *)skb_network_header(skb);
+    const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
+    unsigned int hr, min, sec;
+    char buff[256] __attribute__((aligned(sizeof(long))));
+
+    indev = skb->dev ? skb->dev->name : nulldevname;
+	
+    get_cur_time(&hr, &min, &sec);
+    if ((strncmp(indev, "eth", 3) != 0) && (strcmp(indev, "lo") != 0) ) {
+	sprintf(buff, "\n[%d:%d:%d] IPv6 PKT: v%d, %x:%x:%x:%x -> %x:%x:%x:%x, proto: %u, dev: %s\n" 
+			"\tSKB INFO: len: %u d-len %u size %u\n"
+			"\tdata %p head-%p tail-%p end-%p\n"
+			"\ttype 0x%x proto 0x%x transport_header: %u network_header: %u\n", 
+			hr, min, sec,
+			ip6h->version, ntohl(ip6h->saddr.s6_addr32[0]), ntohl(ip6h->saddr.s6_addr32[1]), ntohl(ip6h->saddr.s6_addr32[2]), ntohl(ip6h->saddr.s6_addr32[3]),
+			ntohl(ip6h->daddr.s6_addr32[0]), ntohl(ip6h->daddr.s6_addr32[1]), ntohl(ip6h->daddr.s6_addr32[2]), ntohl(ip6h->daddr.s6_addr32[3]),
+			ip6h->nexthdr, indev, skb->len, skb->data_len, skb->truesize, skb->data, skb->head, skb->tail, skb->end, 
+			skb->pkt_type, ntohs(skb->protocol), skb->transport_header, skb->network_header);
+	    pr_info("%s: %s", prefix, buff);
+
+            //ff020000:0:0:16
+            if (ntohl(ip6h->daddr.s6_addr32[3]) == 0x16)
+                dump_stack();
+        }
+
+    return;
+}
+
 static unsigned int ipv6_pkt_check(unsigned int hooknum, struct sk_buff *skb,
         const struct net_device *in,
         const struct net_device *out,
@@ -102,6 +136,68 @@ drop_out:
 	return NF_DROP;
 }
 
+static unsigned int ip6_pre_routing(unsigned int hooknum, struct sk_buff *skb,
+        const struct net_device *in,
+        const struct net_device *out,
+        int (*okfn)(struct sk_buff *))
+{
+    const char *indev;
+    const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
+    indev = skb->dev ? skb->dev->name : nulldevname;
+    get_info_v6("PRE_ROUTING", skb, in, out);
+out:
+    return NF_ACCEPT;
+drop_out:
+	return NF_DROP;
+}
+
+static unsigned int ip6_inet_forward(unsigned int hooknum, struct sk_buff *skb,
+        const struct net_device *in,
+        const struct net_device *out,
+        int (*okfn)(struct sk_buff *))
+{
+    const char *indev;
+    const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
+    indev = skb->dev ? skb->dev->name : nulldevname;
+    get_info_v6("INET_FORWARD", skb, in, out);
+out:
+    return NF_ACCEPT;
+drop_out:
+	return NF_DROP;
+}
+
+static unsigned int ip6_post_routing(unsigned int hooknum, struct sk_buff *skb,
+        const struct net_device *in,
+        const struct net_device *out,
+        int (*okfn)(struct sk_buff *))
+{
+    const char *indev;
+    const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
+    indev = skb->dev ? skb->dev->name : nulldevname;
+    get_info_v6("POST_ROUTING", skb, in, out);
+    if ((strcmp(indev, "ve200") == 0) || (strcmp(indev, "vrf-2") == 0))
+        goto drop_out;
+out:
+    return NF_ACCEPT;
+drop_out:
+	return NF_DROP;
+}
+
+static unsigned int ip6_pkt_local_out(void *priv, struct sk_buff *skb, 
+        const struct nf_hook_state *state)
+{
+    const char *indev;
+    const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
+    indev = skb->dev ? skb->dev->name : nulldevname;
+    //get_info_v6("LOCAL_OUT", skb, NULL, NULL);
+    //pr_info("LOCAL_OUT: %s\n", indev); 
+
+out:
+    return NF_ACCEPT;
+drop_out:
+	return NF_DROP;
+}
+#if 0
 static struct nf_hook_ops hook_ops[] __read_mostly = {
 	{
         .hook     = (nf_hookfn *)ipv6_pkt_check,
@@ -109,6 +205,39 @@ static struct nf_hook_ops hook_ops[] __read_mostly = {
         .hooknum  = NF_INET_PRE_ROUTING,
         .priority = NF_IP6_PRI_FIRST,
     }
+};
+#endif
+static struct nf_hook_ops hook_ops[] __read_mostly = {
+	{
+        .hook     = (nf_hookfn *)ip6_post_routing,
+        .pf       = NFPROTO_IPV6,
+        .hooknum  = NF_INET_POST_ROUTING,
+        .priority = NF_IP6_PRI_FIRST,
+        },
+        {
+        .hook     = (nf_hookfn *)ip6_inet_forward,
+        .pf       = NFPROTO_IPV6,
+        .hooknum  = NF_INET_FORWARD,
+        .priority = NF_IP6_PRI_FIRST,
+        },
+        {
+        .hook     = (nf_hookfn *)ip6_pre_routing,
+        .pf       = NFPROTO_IPV6,
+        .hooknum  = NF_INET_PRE_ROUTING,
+        .priority = NF_IP6_PRI_FIRST,
+        },
+        /*{
+        .hook     = (nf_hookfn *)ip_pkt_check,
+        .pf       = NFPROTO_IPV4,
+        .hooknum  = NF_INET_LOCAL_IN,
+        .priority = NF_IP_PRI_FIRST,
+        },*/
+        /*{
+        .hook     = (nf_hookfn *)ip_pkt_local_out,
+        .pf       = NFPROTO_IPV4,
+        .hooknum  = NF_INET_LOCAL_OUT,
+        .priority = NF_IP_PRI_FIRST,
+        }*/
 };
 
 static int __init ipv6_pkt_inspect_init(void)

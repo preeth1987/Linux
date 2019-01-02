@@ -38,8 +38,9 @@ fi
 
 echo "Will spawn $MYTTY terminal depending on below selection"
 
+CSVDATA=$(grep -v '^#' $CSVFILE)
 echo "0) ALL"
-select NODE in `cut -d',' -f1 $CSVFILE`;
+select NODE in `echo "$CSVDATA" | cut -d',' -f1`;
 do
 	echo "you selected $NODE";
 	if [ "$REPLY" = "0" ] ; then 
@@ -48,7 +49,7 @@ do
 		x=0
 		y=0
 		orientation=0 #right=1 or down=0
-		for i in `cut -d',' -f1 $CSVFILE`
+		for i in `echo "$CSVDATA" | cut -d',' -f1`
 		do
 			if [[ $i == \#* ]] ;
 			then
@@ -57,8 +58,8 @@ do
 				continue;
 			fi
 			echo "Telnet to $i..."
-			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
-			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
+			IP=`echo "$CSVDATA" | sed -n "$index"p | cut -d',' -f$column -`;
+			NODE=`echo "$CSVDATA" | sed -n "$index"p | cut -d',' -f1 -`;
 			echo "NODE: $NODE : IP $IP"
 			opt="-p $x,$y -s 105,17 --Title "$2_$NODE""
 			if [ "$log" = "1" ] ; then
@@ -81,8 +82,8 @@ do
 		#break; 
 	fi
 	if [ -n $NODE ] ; then
-		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
-		echo "console $IP"
+		IP=`echo "$CSVDATA" | sed -n "$REPLY"p | cut -d',' -f$column -`;
+		echo "Console $IP"
 		opt="-s 105,17 --Title "$2_$NODE""
 		if [ "$log" = "1" ] ; then
 			ts=`date +"%d-%b-%Y_%H_%M%S"`
