@@ -79,13 +79,23 @@ if has("cscope")
     " else add the database pointed to by environment variable 
 	" expecting CSCOPE_DB in format "<cscope db path>;<prepend prefix path>"
     if $CSCOPE_DB != ""
-		let db = strpart($CSCOPE_DB, 0, match($CSCOPE_DB, ";"))
-		let prepend = strpart(matchstr($CSCOPE_DB, ";.*"), 1)
-		if (!empty(prepend) )
-			set nocscopeverbose
-			"echo "db: " . db . " path: " . prepend
-			exe "cs add " . db . " " . prepend
-		endif
+        for cscope_db in split($CSCOPE_DB, "&&")
+            if cscope_db != ""
+                "echo "cscope_db is " . cscope_db
+                let db = strpart(cscope_db, 0, match(cscope_db, ";"))
+                "echo "db is " . db
+		        let prepend = strpart(matchstr(cscope_db, ";.*"), 1)
+                "echo "prepend is " . prepend
+                if (!empty(prepend) )
+                    set nocscopeverbose
+                    "echo "db: " . db . " path: " . prepend
+                    exe "cs add " . db . " " . prepend
+                else
+                    set nocscopeverbose
+                    exe "cs add " . db
+                endif
+            endif
+        endfor
     endif
 
     " show msg when any other cscope db added
@@ -252,7 +262,7 @@ au BufRead,BufNewFile Makefile* set noexpandtab
 " configure editor with tabs and nice stuff...
 " --------------------------------------------------------------------------------
 set expandtab           " enter spaces when tab is pressed
-set textwidth=120       " break lines when line length increases
+"set textwidth=120       " break lines when line length increases
 set tabstop=4           " use 4 spaces to represent tab
 set softtabstop=4
 set shiftwidth=4        " number of spaces to use for auto indent

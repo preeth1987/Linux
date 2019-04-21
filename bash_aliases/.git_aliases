@@ -10,6 +10,12 @@ alias glbranch='git branch'
 alias lbranch=glbranch
 alias rbranch='git branch -r'
 
+#CSCOPE_SETUP_EXAMPLE
+#setup_cscope() {
+#	export CSCOPE_PFX="SOMETHING"
+#    export CSCOPE_DB="/CSCOPE_PATH_1; /CSCOPE_PREFIX_1 && /CSCOPE_PATH_2;" 
+#}
+
 gpv() {
 	SAVED="$@"
 	set -- $( lsview )

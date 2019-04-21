@@ -12,7 +12,7 @@ clean:
 
 else
 
-MODULE = ipv6_pkt_inspect.o
+MODULE = ip_pkt_inspect.o
 CFLAGS_$(MODULE) := -DDEBUG
 obj-m := $(MODULE)
 

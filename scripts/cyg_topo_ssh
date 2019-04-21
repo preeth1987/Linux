@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #Topology CSV to be in format NAME,Console,MGMT IP,ssh username, ssh password
 
-if [ $# -lt 2 ]; then
-	echo "Usage: cyg_topo <topology> <console/mgmt>"
+if [ $# -lt 1 ]; then
+	echo "Usage: cyg_topo_ssh <topology> [log]"
 	echo "		 topology is csv file location"
 	exit
 fi
@@ -15,16 +15,15 @@ else
 	echo "FILE $CSVFILE not found"
 	exit
 fi
+column=3;
 
-if [[ "${2,,}" == c* ]]; then
-	echo "Console Connection"
-	column=2;
-elif [[ "${2,,}" == m* ]]; then
-	echo "MGMT connection"
-	column=3;
-else
-	echo "%Error: Invalid connection type mentioned. Select console/mgmt"
-	exit
+log=0
+if [[ "${2,,}" == l* ]]; then
+	log=1
+	ts=`date +"%d-%b-%Y_%H_%M%S"`
+	logDir=$HOME/logs/ctopo_${CSVFILE##*/}_$2_$ts
+	echo "Log path: $logDir"
+	mkdir -p $logDir
 fi
 
 unameColumn=$(expr $column + 1);
@@ -32,30 +31,74 @@ passwdColumn=$(expr $column + 2);
 
 echo "Will spawn $MYTTY terminal depending on below selection"
 
+CSVDATA=$(grep -v '^#' $CSVFILE)
 echo "0) ALL"
-select NODE in `cut -d',' -f1 $CSVFILE`;
+select NODE in `echo "$CSVDATA" | cut -d',' -f1`;
 do
 	echo "you selected $NODE";
 	if [ "$REPLY" = "0" ] ; then 
 		index=1
-		for i in `cut -d',' -f1 $CSVFILE`
+        x=0
+        y=0
+		orientation=0 #right=1 or down=0
+		for i in `echo "$CSVDATA" | cut -d',' -f1`
 		do
+			if [[ $i == \#* ]] ;
+            then
+                echo "Skipping $i"
+                index=$(expr $index + 1);
+                continue;
+            fi
+
 			echo "ssh to $i..."
+
 			IP=`sed -n "$index"p $CSVFILE | cut -d',' -f$column -`;
 			NODE=`sed -n "$index"p $CSVFILE | cut -d',' -f1 -`;
 			UNAME=`sed -n "$index"p $CSVFILE | cut -d',' -f$unameColumn -`;
 			PASSWD=`sed -n "$index"p $CSVFILE | cut -d',' -f$passwdColumn -`;
-			echo "NODE: $NODE : IP $IP "
-			$MYTTY --Title "$2_$NODE" --exec ssh $IP &
+
+			echo "NODE: $NODE : IP $IP user: $UNAME passwd: $PASSWD"
+			opt="-p $x,$y -s 105,17 --Title "$NODE""
+
+            if [ "$log" = "1" ] ; then
+                ts=`date +"%d-%b-%Y_%H_%M%S"`
+                logFile=$logDir/$NODE\_$ts.log
+                echo "logging to $logFile"
+                opt="$opt -l $logFile"
+            fi
+
+			$MYTTY $opt --exec ssh $UNAME@$IP &
+
 			index=$(expr $index + 1);
+
+			if [ $orientation -eq 1 ] ; then
+                y=$(expr $y + 270);
+                x=0;
+                orientation=0;
+            else
+                x=$(expr $x + 770);
+                orientation=1;
+            fi
 		done
-		continue; 
+		#break; 
 	fi
+
 	if [ -n $NODE ] ; then
 		IP=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$column -`;
 		UNAME=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$unameColumn -`;
 		PASSWD=`sed -n "$REPLY"p $CSVFILE | cut -d',' -f$passwdColumn -`;
-		echo "console $IP "
-		$MYTTY -s 114,19 --Title "$2_$NODE" --exec ssh $UNAME@$IP &
+
+		echo "NODE: $NODE IP: $IP user: $UNAME passwd: $PASSWD"
+		opt="-s 105,17 --Title "$NODE""
+
+        if [ "$log" = "1" ] ; then
+            ts=`date +"%d-%b-%Y_%H_%M%S"`
+            logFile=$logDir/$NODE\_$ts.log
+            echo "logging to $logFile"
+            opt="$opt -l $logFile"
+            opt="$opt -l $logFile"
+        fi
+
+		$MYTTY $opt --exec ssh $UNAME@$IP &
 	fi
 done

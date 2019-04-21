@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-for i in `cat $HOME/pv`
+for i in `cat $HOME/pv $HOME/slv`
 do
 	echo "For view : $i"
 	#lsco="cd $i && /tools/bin/git ls-files -m"

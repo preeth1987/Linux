@@ -46,7 +46,6 @@ void get_info(char *prefix, struct sk_buff *skb, const struct net_device *in,
     indev = skb->dev ? skb->dev->name : nulldevname;
 	
     get_cur_time(&hr, &min, &sec);
-    if (ntohl(iph->daddr) == 0xffffffff)
     if ((strcmp(indev, "eth0") != 0) && (strcmp(indev, "lo") != 0) ) {
 	    sprintf(buff, "[%d:%d:%d] IP PKT: v%d, %x -> %x, proto: %u, dev: %s dev_ref: %d\n" 
 			    "\tSKB INFO: len: %u d-len %u size %u type 0x%x proto 0x%x refdst: %x\n"
@@ -103,7 +102,7 @@ static unsigned int ip_post_routing(unsigned int hooknum, struct sk_buff *skb,
     const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
     indev = skb->dev ? skb->dev->name : nulldevname;
     get_info("POST_ROUTING", skb, in, out);
-    if ((strcmp(indev, "ve200") == 0) || (strcmp(indev, "vrf-2") == 0))
+    if ((strcmp(indev, "ve1100") == 0) || (strcmp(indev, "vrf-2") == 0))
         goto drop_out;
 out:
     return NF_ACCEPT;
