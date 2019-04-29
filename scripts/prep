@@ -45,3 +45,5 @@ if [ -f $HOME/.gitconfig ]; then
 	echo "[difftool]" >> $HOME/.gitconfig
 	echo "	prompt = false" >> $HOME/.gitconfig
 fi
+
+ln -s $HOME/git/Linux/bash_aliases/.minttyrc ~/.minttyrc
