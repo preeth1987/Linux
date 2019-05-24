@@ -46,6 +46,17 @@ alias ="clear"
 del_ssh_key() {
 	sed -i '/'$1'/d' ~/.ssh/known_hosts
 }
+
+add_auto_login() {
+    if [[ ${#1} -lt 2 ]]
+    then
+        echo "Usage: add_auto_login <uname> <ip>"
+        return
+    fi
+    del_ssh_key $2
+    cat ~/.ssh/id_rsa.pub | ssh $1@$2 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys2"
+}
+
 sendToAll() {
 	for i in `dumpIp $1`; do echo "IP: $i CMD: $2"; $SCRIPT_DIR/sendCmd $i "$2"; done
 }
