@@ -43,9 +43,9 @@ bind f eval "hardstatus ignore"
 bind F eval "hardstatus alwayslastline"
 
 #Start with 3 screens always
-screen 3
 screen 2
 screen 1
+screen 0
 
 #Page UP & Down binding
 bindkey 5~ eval "copy" "stuff ^U"

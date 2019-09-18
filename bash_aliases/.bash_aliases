@@ -7,7 +7,8 @@ fi
 alias cdb='. ~/bin/cdb'
 export SCRIPT_DIR=$HOME/git/Linux/scripts
 export PATH=$PATH:$SCRIPT_DIR
-alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1024;tot=tot+\$1;printf \"%dMB -> %s\n\",size,\$2 } END { printf \"Total: %dKB\n\", tot }'"
+#alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1024;tot=tot+\$1;printf \"%dMB -> %s\n\",size,\$2 } END { printf \"Total: %dKB\n\", tot }'"
+alias findsize="du -h --max-depth=1"
 alias tip="cat ~/tip | grep -i $1"
 alias lm="find -printf \"%TY-%Tm-%Td %TT %p\n\" | sort -n"
 #alias ll="ls -al | pg"
@@ -60,6 +61,17 @@ add_auto_login() {
 sendToAll() {
 	for i in `dumpIp $1`; do echo "IP: $i CMD: $2"; $SCRIPT_DIR/sendCmd $i "$2"; done
 }
+
+#Mail alias
+mailme() {
+    if [[ ${#2} -eq 0 ]]
+    then
+        mail -s "SELF:$1" -c "$EMAIL; " $EMAIL < /dev/null
+        return
+    fi
+    tail -50 $2 | tr -cd "[:print:]\n" | mailx -s "SELF:$1" -c "$EMAIL; " $EMAIL
+}
+export -f mailme
 
 #git shortcuts
 alias cdgit='cd $HOME/git'

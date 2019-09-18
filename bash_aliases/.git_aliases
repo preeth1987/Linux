@@ -54,7 +54,11 @@ gpb() {
 
 gitco ()
 {
-    git checkout $*
+    if [ -z $1 ]
+        then echo "Need the name of the branch"
+    else
+        git submodule foreach  --recursive "git checkout $1 || true"
+    fi
 }
 gitci ()
 {
@@ -120,7 +124,7 @@ gflog() {
 gpull() {
 	if cBranch=$(git symbolic-ref --short -q HEAD)
 	then
-		git pull origin $cBranch --rebase --prune
+		git pull origin $cBranch --rebase --prune --recurse-submodules
 		#git pull origin $cBranch
 	else
 		echo "not on any branch"
@@ -202,4 +206,24 @@ gfpush() {
             git push --force-with-lease origin $1
         fi    
     fi
+}
+
+gpatch() {
+    if [ -z $1 ]
+    then
+        echo "Usage: gpatch <patch file>"
+    fi
+    git config merge.tool vimdiff   
+    git config merge.conflictstyle diff3
+    git am -3 < $1
+}
+
+gmerge() {
+    git config merge.tool vimdiff   
+    git config merge.conflictstyle diff3
+    git mergetool
+}
+
+gdump() {
+    git remote show origin
 }
