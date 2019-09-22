@@ -1,3 +1,4 @@
 echo setting cygwin aliases;
 export MYTTY=mintty
 alias nterm="mintty &"
+alias cygl="$MYTTY -l $HOME/logs/logs/`date +"%d-%b-%Y_%H_%M_%S"`.log -D -h a"

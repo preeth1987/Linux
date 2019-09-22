@@ -58,7 +58,7 @@ do
 			PASSWD=`sed -n "$index"p $CSVFILE | cut -d',' -f$passwdColumn -`;
 
 			echo "NODE: $NODE : IP $IP user: $UNAME passwd: $PASSWD"
-			opt="-p $x,$y -s 105,17 --Title "$NODE""
+			opt="-p $x,$y -s 105,17 --Title "$NODE" --hold always"
 
             if [ "$log" = "1" ] ; then
                 ts=`date +"%d-%b-%Y_%H_%M%S"`
