@@ -68,7 +68,8 @@ gitci ()
 gitr ()
 {
     #git pull origin master
-	git pull --rebase
+	#git pull --rebase
+    git submodule foreach --recursive "git reset HEAD --hard || true"
 }
 gitlt ()
 {
@@ -103,6 +104,9 @@ ghist2 ()
 	git log -p -2
 }
 
+glogdetail() {
+    git log -p --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset'
+}
 # Log of commit messages in one line
 glog() {
     #git log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' --abbrev-commit --date=short
@@ -212,6 +216,7 @@ gpatch() {
     if [ -z $1 ]
     then
         echo "Usage: gpatch <patch file>"
+        exit
     fi
     git config merge.tool vimdiff   
     git config merge.conflictstyle diff3
@@ -226,4 +231,13 @@ gmerge() {
 
 gdump() {
     git remote show origin
+}
+
+glist() {
+    gitss | grep -i "M " | awk -F ' ' '{print $2}'
+}
+
+gedit() {
+    gitss | grep -i "M " | awk -F ' ' '{print $2}' | /usr/bin/xargs vim
+    stty sane
 }

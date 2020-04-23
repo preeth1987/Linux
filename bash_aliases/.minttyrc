@@ -1,4 +1,5 @@
 BoldAsFont=-1
+BoldAsFont=yes
 ScrollbackLines=1316134911
 BellFlash=yes
 CursorColour=193,193,193
@@ -7,7 +8,7 @@ Columns=80
 Rows=50
 Font=Courier New
 #Font=Monaco
-FontHeight=9
+FontHeight=10
 ClicksPlaceCursor=no
 HandleDPI=yes
 CopyAsRTF=no

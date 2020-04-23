@@ -9,6 +9,7 @@ export SCRIPT_DIR=$HOME/git/Linux/scripts
 export PATH=$PATH:$SCRIPT_DIR
 #alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1024;tot=tot+\$1;printf \"%dMB -> %s\n\",size,\$2 } END { printf \"Total: %dKB\n\", tot }'"
 alias findsize="du -h --max-depth=1"
+alias latest="find . -maxdepth 1 -printf '%TY-%Tm-%Td %TT ' -exec du -sh {} \; | sort -r" 
 alias tip="cat ~/tip | grep -i $1"
 alias lm="find -printf \"%TY-%Tm-%Td %TT %p\n\" | sort -n"
 #alias ll="ls -al | pg"
@@ -49,7 +50,7 @@ del_ssh_key() {
 }
 
 add_auto_login() {
-    if [[ ${#1} -lt 2 ]]
+    if [[ ${#} -lt 2 ]]
     then
         echo "Usage: add_auto_login <uname> <ip>"
         return

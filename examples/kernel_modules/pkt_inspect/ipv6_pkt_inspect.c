@@ -84,7 +84,7 @@ static unsigned int ipv6_pkt_check(unsigned int hooknum, struct sk_buff *skb,
     //indev = in ? in->name : nulldevname;
     indev = skb->dev ? skb->dev->name : nulldevname;
 
-	if (strncmp(indev, "eth", 3) != 0) {
+	if (strncmp(indev, "Vrf", 3) == 0) {
 	sprintf(buff, "\n[%d:%d:%d] IPv6 PKT: v%d, %x:%x:%x:%x -> %x:%x:%x:%x, proto: %u, dev: %s\n" 
 			"\tSKB INFO: len: %u d-len %u size %u\n"
 			"\tdata %p head-%p tail-%p end-%p\n"
@@ -175,8 +175,8 @@ static unsigned int ip6_post_routing(unsigned int hooknum, struct sk_buff *skb,
     const char nulldevname[IFNAMSIZ] __attribute__((aligned(sizeof(long))));
     indev = skb->dev ? skb->dev->name : nulldevname;
     get_info_v6("POST_ROUTING", skb, in, out);
-    if ((strcmp(indev, "ve200") == 0) || (strcmp(indev, "vrf-2") == 0))
-        goto drop_out;
+    /*if ((strcmp(indev, "eth0") == 0) || (strcmp(indev, "eth1") == 0))
+        goto drop_out;*/
 out:
     return NF_ACCEPT;
 drop_out:
