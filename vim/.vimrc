@@ -253,10 +253,10 @@ syntax on
 set ruler
 "filetype indent plugin on
 " configure expanding of tabs for various file types
-au BufRead,BufNewFile *.py set noexpandtab
-au BufRead,BufNewFile *.c set noexpandtab
-au BufRead,BufNewFile *.h set noexpandtab
-au BufRead,BufNewFile Makefile* set noexpandtab
+" au BufRead,BufNewFile *.py set noexpandtab
+" au BufRead,BufNewFile *.c set noexpandtab
+" au BufRead,BufNewFile *.h set noexpandtab
+" au BufRead,BufNewFile Makefile* set noexpandtab
 
 " --------------------------------------------------------------------------------
 " configure editor with tabs and nice stuff...
@@ -267,3 +267,16 @@ set tabstop=4           " use 4 spaces to represent tab
 set softtabstop=4
 set shiftwidth=4        " number of spaces to use for auto indent
 set autoindent          " copy indent from current line when starting a new line
+
+" :retab changes *everything*, not just start of lines
+fun! Retab(expandtab)
+    let l:spaces = repeat(' ', &tabstop)
+
+    " Replace tabs with spaces
+    if a:expandtab
+        silent! execute '%substitute#^\%(' . l:spaces . '\)\+#\=repeat("\t", len(submatch(0)) / &tabstop)#e'
+    " Replace spaces with tabs
+    else
+        silent! execute '%substitute#^\%(\t\)\+#\=repeat("' . l:spaces . '", len(submatch(0)))#e'
+    endif
+endfun

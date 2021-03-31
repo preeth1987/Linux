@@ -10,6 +10,7 @@ export PATH=$PATH:$SCRIPT_DIR
 #alias findsize="tot=0;find . -type f | xargs ls -s | sort -rn | awk '{size=\$1/1024;tot=tot+\$1;printf \"%dMB -> %s\n\",size,\$2 } END { printf \"Total: %dKB\n\", tot }'"
 alias findsize="du -h --max-depth=1"
 alias latest="find . -maxdepth 1 -printf '%TY-%Tm-%Td %TT ' -exec du -sh {} \; | sort -r" 
+alias clean_30="find . -type f -mtime +30 -exec rm -f {} \; && find . -type d -mtime +30 -exec rm -Rf {} \;"
 alias tip="cat ~/tip | grep -i $1"
 alias lm="find -printf \"%TY-%Tm-%Td %TT %p\n\" | sort -n"
 #alias ll="ls -al | pg"
@@ -73,6 +74,30 @@ mailme() {
     tail -50 $2 | tr -cd "[:print:]\n" | mailx -s "SELF:$1" -c "$EMAIL; " $EMAIL
 }
 export -f mailme
+cpr() {
+    if [[ ${#} -lt 2 ]]
+    then
+        echo "Usage: cpr source destination"
+        echo "Copy recursively from source to destination"
+        return
+    fi
+    #rsync --info=progress2 $1 $2
+    rsync -avzP $1 $2
+}
+
+hint() {
+    if [[ ${#} -lt 1 ]]
+    then
+        echo "Usage: hint <key>"
+        return
+    fi
+    echo "Hint for $1"
+    pat=$1
+    awk '/<START>/ {p=1}; \
+     {if (p==1) {a[NR]=$0}}; \
+     /'"$pat"'/ {f=1}; \
+     /<END>/ {p=0; if (f==1) {for (i in a) print a[i]};f=0; delete a}' $HOME/hints
+}
 
 #git shortcuts
 alias cdgit='cd $HOME/git'
