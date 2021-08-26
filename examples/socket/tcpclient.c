@@ -2,6 +2,7 @@
 #include<string.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
+#include<errno.h>
  
 int main(int argc , char *argv[])
 {
@@ -20,10 +21,19 @@ int main(int argc , char *argv[])
         printf("Could not create socket");
     }
     puts("Socket created");
+#if 0
+#define DEV "Loopback0"
+    int ret = setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, DEV, strlen(DEV));
+    if (ret < 0)
+    {
+            printf("socket bind to dev %s failed %d %s\n", DEV, ret, strerror(errno));
+            return -1;
+    }
+#endif
      
     server.sin_addr.s_addr = inet_addr(argv[1]);
     server.sin_family = AF_INET;
-    server.sin_port = htons(8888);
+    server.sin_port = htons(8889);
  
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
