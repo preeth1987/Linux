@@ -62,7 +62,7 @@ do
 			NODE=`echo "$CSVDATA" | sed -n "$index"p | cut -d',' -f1 -`;
 			echo "NODE: $NODE : IP $IP"
 			#opt="-p $x,$y -s 105,17 --Title "$2_$NODE""
-            opt="-p $x,$y -s 92,15 --fs 9 --Title "$2_$NODE""
+			opt="-p $x,$y -s 92,15 --fs 9 --Title "$2_$NODE""
 			if [ "$log" = "1" ] ; then
 				ts=`date +"%d-%b-%Y_%H_%M%S"`
 				logFile=$logDir/$NODE\_$ts.log
@@ -86,7 +86,7 @@ do
 		IP=`echo "$CSVDATA" | sed -n "$REPLY"p | cut -d',' -f$column -`;
 		echo "Console $IP"
 		#opt="-s 105,17 --Title "$2_$NODE""
-        opt="-s 92,15 --fs 9 --Title "$2_$NODE""
+		opt="-s 92,15 --fs 9 --Title "$2_$NODE""
 		if [ "$log" = "1" ] ; then
 			ts=`date +"%d-%b-%Y_%H_%M%S"`
 			logFile=$logDir/$NODE\_$ts.log

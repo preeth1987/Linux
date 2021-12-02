@@ -59,7 +59,7 @@ do
 
 			echo "NODE: $NODE : IP $IP user: $UNAME passwd: $PASSWD"
 			#opt="-p $x,$y -s 105,17 --Title "$NODE" --hold always"
-            opt="-p $x,$y -s 92,15 --Title "$NODE" --hold always"
+			opt="-p $x,$y -s 92,15 --Title "$NODE" --hold always"
 
             if [ "$log" = "1" ] ; then
                 ts=`date +"%d-%b-%Y_%H_%M%S"`
@@ -91,7 +91,7 @@ do
 
 		echo "NODE: $NODE IP: $IP user: $UNAME passwd: $PASSWD"
 		#opt="-s 105,17 --Title "$NODE""
-        opt="-s 92,15 --Title "$NODE""
+		opt="-s 92,15 --Title "$NODE""
 
         if [ "$log" = "1" ] ; then
             ts=`date +"%d-%b-%Y_%H_%M%S"`
