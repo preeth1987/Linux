@@ -49,6 +49,7 @@ alias ="clear"
 del_ssh_key() {
 	sed -i '/'$1'/d' ~/.ssh/known_hosts
 }
+alias dkey='del_ssh_key'
 
 add_auto_login() {
     if [[ ${#} -lt 2 ]]

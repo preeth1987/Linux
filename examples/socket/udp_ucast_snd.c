@@ -34,11 +34,12 @@ int main(int argc, char **argv)
 
                 bzero(&self, sizeof(self));
 
+                //Source config
                 self.sin_family = AF_INET ;
-                self.sin_port   = htons(123);
-                self.sin_addr.s_addr = inet_addr("192.168.14.2");
-
-		ret = setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE, bdev, strlen(bdev));
+                self.sin_port   = htons(12334);
+                self.sin_addr.s_addr = inet_addr("7.0.0.1");
+        //Only if udp packet needs to be sent on VRF
+		//ret = setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE, bdev, strlen(bdev));
 
                 ret = bind(s, (struct sockaddr *) &self, sizeof(self));
                 if(ret < 0 )
