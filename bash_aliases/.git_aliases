@@ -227,10 +227,23 @@ gpatch() {
     git am -3 < $1
 }
 
-gmerge() {
+gresolve() {
     git config merge.tool vimdiff   
     git config merge.conflictstyle diff3
     git mergetool
+}
+
+gmerge() {
+	echo "Merging from branch:$1 to branch:$(git symbolic-ref --short -q HEAD)"
+	if [ -z $1 ]
+	then
+		echo "Usage: gmerge <branch to merge from>"
+		return
+	fi
+	git merge $1 --no-commit
+    #git config merge.tool vimdiff   
+    #git config merge.conflictstyle diff3
+    #git mergetool
 }
 
 gdump() {

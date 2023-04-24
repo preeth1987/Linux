@@ -107,3 +107,27 @@ if [ -f $HOME/git/Linux/bash_aliases/.git_aliases ]; then
 	echo "Sourcing git aliases"
 	source $HOME/git/Linux/bash_aliases/.git_aliases
 fi
+
+alias cscope='cscope -R'
+expense() {
+    if [[ ${#} -lt 2 ]]
+    then
+        echo "Usage: expense <file> <Type>"
+        return
+    fi
+    grep -i $2 $1 | awk '{tot+=$NF} END {print tot}'
+}
+
+sort_bill() {
+    if [[ ${#} -lt 1 ]]
+    then
+        echo "Usage: sort_bill <file>"
+        return
+    fi
+    grep -iE "[a-z]+" $1 | awk '{print $NF,$0}' | sort -n | cut -f2- -d' ' | grep -v RECD
+}
+
+recursive_diff() {
+    export pfx="/cygdrive/g/My Drive/"
+    find "." -type f -print -exec diff "{}" "$pfx/{}" \;
+}
