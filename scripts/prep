@@ -38,6 +38,7 @@ wget --no-check-certificate https://raw.githubusercontent.com/airblade/vim-gitgu
 
 ln -s $HOME/git/Linux/vim/highlights.vim ~/.vim/plugin/highlights.vim
 ln -s $HOME/git/Linux/vim/highlights.csv ~/.vim/plugin/highlights.csv
+ln -s $HOME/git/Linux/vim/multiwindow.vim ~/.vim/plugin/multiwindow.vim
 
 if [ -f $HOME/.gitconfig ]; then
 	echo "[diff]" >> $HOME/.gitconfig
