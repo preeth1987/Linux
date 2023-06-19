@@ -30,6 +30,7 @@ export MYTTY=xterm
 #SERVER/VM configuration
 alias svm='ssh $USER1@$VM1'
 alias svm1='ssh $USER1@$VM1'
+alias svm2='ssh $USER2@$VM2'
 
 #RPI
 alias rpi="ssh osmc@osmc"

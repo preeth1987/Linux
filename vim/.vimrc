@@ -281,3 +281,4 @@ fun! Retab(expandtab)
     endif
 endfun
 filetype plugin indent on
+map <C-J> '<,'>s/,/,\r/g
