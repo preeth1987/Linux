@@ -281,4 +281,10 @@ fun! Retab(expandtab)
     endif
 endfun
 filetype plugin indent on
+if has('terminal')
+  tnoremap <S-Space> <Space>
+endif
 map <C-J> '<,'>s/,/,\r/g
+map <ESC>[8~    <End>
+
+map <ESC>[7~    <Home>

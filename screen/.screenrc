@@ -6,6 +6,9 @@ msgminwait 2
 defflow off
 vbell on
 
+escape ^Jj
+#escape ^Qq
+
 # Allow bold colors
 attrcolor b ".I"
 
