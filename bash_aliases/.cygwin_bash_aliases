@@ -2,3 +2,69 @@ echo setting cygwin aliases;
 export MYTTY=mintty
 alias nterm="mintty &"
 alias cygl="$MYTTY -l $HOME/logs/logs/`date +"%d-%b-%Y_%H_%M_%S"`.log -D -h a"
+
+function cpserver() {
+    if [[ $# -lt 1 ]]; then
+	echo "Please provide space separated list of files to be copied from server $VM1"
+	echo "SYNTAX: cpserver [-r] <file1> [<file2> <file3> ...]"
+	return;
+    fi
+    flags=""
+    files=""
+    while [[ $# -gt 0 ]]; do
+    case $1 in
+    	-r|--recursive)
+	  echo "Recursive copy folder"
+	  flags=$flags" -r "
+	  shift
+	  #shift
+	  ;;
+        *)
+	  files=$files"$1 "
+	  shift
+	  #shift
+	  ;;
+    esac
+    done
+
+    for file in $files; do
+    	echo "scp $flags $USER1@$VM1:$file ."
+	scp $flags $USER1@$VM1:$file .
+    done
+}
+
+function mvserver() {
+    if [[ $# -lt 2 ]]; then
+	echo "Please provide space separated list of files to be copied to server $VM1"
+	echo "SYNTAX: mvserver <file1> [<file2> <file3> ...] <remote-location>"
+	return;
+    fi
+    flags=""
+    files=""
+    while [[ $# -gt 0 ]]; do
+    case $1 in
+    	-r|--recursive)
+	  echo "Recursive copy folder"
+	  flags=$flags" -r "
+	  shift
+	  #shift
+	  ;;
+        *)
+	  files=$files"$1 "
+	  shift
+	  #shift
+	  ;;
+    esac
+    done
+
+    loc=`echo $files | awk '{print $(NF)}'`
+    files=`echo $files | awk '{$NF=""}1'`
+    for file in $files; do
+	if [ -f $file ]; then
+	    echo "scp $flags $file $USER1@$VM1:$loc"
+	    scp $flags $file $USER1@$VM1:$loc .
+	else
+	    echo "$file: no such file or directory"
+	fi
+    done
+}

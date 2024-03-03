@@ -132,3 +132,5 @@ recursive_diff() {
     export pfx="/cygdrive/g/My Drive/"
     find "." -type f -print -exec diff "{}" "$pfx/{}" \;
 }
+
+alias now='date "+%Y_%m_%d_%M_%S"'
