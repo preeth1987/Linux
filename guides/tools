@@ -125,36 +125,36 @@ https://discuss.linuxcontainers.org/t/xserver-inside-lxc-container/5022
 
 To kill/close any tcp connection using ss
 
-root@sonic:~# ss -ta | egrep "ssh|State"
+root@project:~# ss -ta | egrep "ssh|State"
 State     Recv-Q Send-Q  Local Address:Port      Peer Address:Port Process
 LISTEN    0      128           0.0.0.0:ssh            0.0.0.0:*
 ESTAB     0      0       10.59.139.219:ssh      10.122.80.134:60683
 LISTEN    0      128              [::]:ssh               [::]:*
-root@sonic:~# ss -K src = 10.59.139.219 sport = 22
+root@project:~# ss -K src = 10.59.139.219 sport = 22
 Netid       State       Recv-Q       Send-Q             Local Address:Port              Peer Address:Port       Process
 tcp         ESTAB       0            0                  10.59.139.219:ssh              10.122.80.134:60683
-root@sonic:~#
-root@sonic:~# ss -ta | egrep "ssh|State"
+root@project:~#
+root@project:~# ss -ta | egrep "ssh|State"
 State     Recv-Q Send-Q  Local Address:Port     Peer Address:Port Process
 LISTEN    0      128           0.0.0.0:ssh           0.0.0.0:*
 LISTEN    0      128              [::]:ssh              [::]:*
-root@sonic:~#
-root@sonic:~#
+root@project:~#
+root@project:~#
 
-root@sonic:~# ss -peima | grep -i neighsyncd -B1
+root@project:~# ss -peima | grep -i neighsyncd -B1
 u_str              ESTAB               0                    0                                                                         /var/run/redis/redis.sock 118157113                                            * 118157112                 users:(("redis-server",pid=1039,fd=492)) skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0) <-> ino:31386 dev:0/20
 
-root@sonic:~# ss -peim0 | grep -i iccpd -B1
+root@project:~# ss -peim0 | grep -i iccpd -B1
         ver:0 cpy_thresh:0 flags( running ) skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)
 p_dgr   0        0                     arp:*                            *        users:(("iccpd",pid=32521,fd=10)) ino:118168932 sk:13c2
 
 
-root@sonic:~# ss -peima --socket=netlink | grep -i ntp
+root@project:~# ss -peima --socket=netlink | grep -i ntp
 UNCONN  0       0                 rtnl:ntpd/10340                        *       sk=0 cb=0 groups=0x00000771     skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)
 UNCONN  0       0                 rtnl:ntpd/10340                        *       sk=0 cb=0 groups=0x00000771     skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)
-root@sonic:~#
+root@project:~#
 
-root@sonic:~# ss -peim0 | grep -i iccp -A1
+root@project:~# ss -peim0 | grep -i iccp -A1
 p_dgr   213504   0                     arp:*                            *        users:(("iccpd",pid=32521,fd=10)) ino:118168932 sk:13c2
         ver:0 cpy_thresh:0 flags( running ) skmem:(r213504,rb212992,t0,tb212992,f0,w0,o0,bl0,d1155)
 
@@ -163,12 +163,12 @@ p_dgr   213504   0                     arp:*                            *       
 
 To test tcp connection on a port
 
-root@sonic:~# echo < /dev/tcp/127.0.0.1/23
+root@project:~# echo < /dev/tcp/127.0.0.1/23
 -bash: connect: Connection refused
 -bash: /dev/tcp/127.0.0.1/23: Connection refused
-root@sonic:~# echo < /dev/tcp/127.0.0.1/22
+root@project:~# echo < /dev/tcp/127.0.0.1/22
 
-root@sonic:~#
+root@project:~#
 
 <END>
 <START>
@@ -416,7 +416,7 @@ To enable ssh auto login from client to server
 On client:
 
 ssh-keygen -t rsa
-ssh-copy-id ps407411@lvnvde0791.lvn.broadcom.net
+ssh-copy-id ubuntu@lvnvde0791.lvn.broadcom.net
 
 <END>
 <START>

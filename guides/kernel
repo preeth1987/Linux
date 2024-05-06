@@ -3,16 +3,16 @@
 
 Kernel dynamic tracing:
 
-root@sonic:/sys/kernel/debug/tracing/events/fib6# echo 1 > enable
-root@sonic:/sys/kernel/debug/tracing/events/fib6# echo 1 fib6_table_lookup/
+root@project:/sys/kernel/debug/tracing/events/fib6# echo 1 > enable
+root@project:/sys/kernel/debug/tracing/events/fib6# echo 1 fib6_table_lookup/
 enable   filter   format   id       trigger
-root@sonic:/sys/kernel/debug/tracing/events/fib6# echo 1 > fib6_table_lookup/enable
-root@sonic:/sys/kernel/debug/tracing/events/fib6# dmesg -cT
-root@sonic:/sys/kernel/debug/tracing/events/fib6# cd fib6_table_lookup/
-root@sonic:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup# ls
+root@project:/sys/kernel/debug/tracing/events/fib6# echo 1 > fib6_table_lookup/enable
+root@project:/sys/kernel/debug/tracing/events/fib6# dmesg -cT
+root@project:/sys/kernel/debug/tracing/events/fib6# cd fib6_table_lookup/
+root@project:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup# ls
 enable  filter  format  id  trigger
-root@sonic:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup# echo stacktrace > trigger
-root@sonic:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup#
+root@project:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup# echo stacktrace > trigger
+root@project:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup#
 
 To remove stacktrace:
 
@@ -27,7 +27,7 @@ To check which events enabled:
 
 cat /sys/kernel/debug/tracing/set_event
 
-root@sonic:/sys/kernel/debug/tracing/events/neigh# echo 1 > enable
+root@project:/sys/kernel/debug/tracing/events/neigh# echo 1 > enable
 cat /sys/kernel/debug/tracing/trace_pipe | grep -i "failed.*100.0.0.3"
 
 Filtering
@@ -301,7 +301,7 @@ tc filter add dev sag401.256 parent 15:0 protocol ipv6 prio 1 handle 0x2 fw acti
 
 
 
-root@Leaf8:~# tc filter add help
+root@host8:~# tc filter add help
 Usage: tc filter [ add | del | change | replace | show ] dev STRING
 Usage: tc filter get dev STRING parent CLASSID protocol PROTO handle FILTERID pref PRIO FILTER_TYPE
        [ pref PRIO ] protocol PROTO
@@ -314,14 +314,14 @@ Where:
 FILTER_TYPE := { rsvp | u32 | bpf | fw | route | etc. }
 FILTERID := ... format depends on classifier, see there
 OPTIONS := ... try tc filter add <desired FILTER_KIND> help
-root@Leaf8:~#
-root@Leaf8:~#
-root@Leaf8:~#
-root@Leaf8:~# tc filter add action help
+root@host8:~#
+root@host8:~#
+root@host8:~#
+root@host8:~# tc filter add action help
 Unknown filter "action", hence option "help" is unparsable
-root@Leaf8:~#
-root@Leaf8:~#
-root@Leaf8:~# tc filter add fw help
+root@host8:~#
+root@host8:~#
+root@host8:~# tc filter add fw help
 Usage: ... fw [ classid CLASSID ] [ indev DEV ] [ action ACTION_SPEC ]
        CLASSID := Push matching packets to the class identified by CLASSID with format X:Y
                   CLASSID is parsed as hexadecimal input.
@@ -329,9 +329,9 @@ Usage: ... fw [ classid CLASSID ] [ indev DEV ] [ action ACTION_SPEC ]
        ACTION_SPEC := Apply an action on matching packets.
        NOTE: handle is represented as HANDLE[/FWMASK].
              FWMASK is 0xffffffff by default.
-root@Leaf8:~#
-root@Leaf8:~#
-root@Leaf8:~#
+root@host8:~#
+root@host8:~#
+root@host8:~#
 
 
 tc filter add dev eth1 parent 1: protocol ip prio 10 \
@@ -481,13 +481,13 @@ Crash kdump decoding
 Kdump analysis example:
 
 apt-get update; apt-get install -y crash ar
-root@Leaf3:/home/admin# ls
+root@host3:/home/admin# ls
 config.py  kdump.202001080712  linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb  main.py
-root@Leaf3:/home/admin# ar x linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb
-root@Leaf3:/home/admin# ls
+root@host3:/home/admin# ar x linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb
+root@host3:/home/admin# ls
 config.py  control.tar.gz  data.tar.xz  debian-binary  kdump.202001080712  linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb  main.py
 
-root@Leaf3:/home/admin# tar xvf data.tar.xz
+root@host3:/home/admin# tar xvf data.tar.xz
 ./
 ./usr/
 ./usr/lib/
@@ -502,9 +502,9 @@ root@Leaf3:/home/admin# tar xvf data.tar.xz
 .
 .
 
-root@Leaf3:/home/admin# ls usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
+root@host3:/home/admin# ls usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
 usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
-root@Leaf3:/home/admin# crash  usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64  ./kdump.202001080712
+root@host3:/home/admin# crash  usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64  ./kdump.202001080712
 
 crash 7.1.7
 Copyright (C) 2002-2016  Red Hat, Inc.
@@ -537,7 +537,7 @@ WARNING: kernel relocated [958MB]: patching 75595 gdb minimal_symbol values
       UPTIME: 02:36:34
 LOAD AVERAGE: 143.30, 69.84, 28.98
        TASKS: 733
-    NODENAME: Leaf3
+    NODENAME: host3
      RELEASE: 4.9.0-11-2-amd64
      VERSION: #1 SMP Debian 4.9.189-3+deb9u2 (2019-11-11)
      MACHINE: x86_64  (2199 Mhz)
@@ -967,21 +967,21 @@ https://github.com/google/syzkaller
 compiling:
 
 
-ubuntu@sonic-lvn-csg-004:/sonic/src/sonic-linux-kernel/linux-5.10.162$ make O=/sonic/src/sonic-linux-kernel/linux-5.10.162/debian/build/build_amd64_none_amd64/ obj=net/bridge -j24
+ubuntu@project-server-004:/project/src/project-linux-kernel/linux-5.10.162$ make O=/project/src/project-linux-kernel/linux-5.10.162/debian/build/build_amd64_none_amd64/ obj=net/bridge -j24
 
-linux-4.9.168$ make O=/sonic/src/sonic-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=drivers/net/vrf.o -j24
+linux-4.9.168$ make O=/project/src/project-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=drivers/net/vrf.o -j24
 
 
-cd /sonic/src/sonic-linux-kernel/linux-4.9.189
-make O=/sonic/src/sonic-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=net/bridge -j24
+cd /project/src/project-linux-kernel/linux-4.9.189
+make O=/project/src/project-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=net/bridge -j24
 
 
 Compiling only selected module:
 
-bb make sonic-slave-bash
+make project-slave-bash
 
-cd /sonic/src/sonic-linux-kernel/linux-4.9.189
-make O=/sonic/src/sonic-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=net/ipv6 -j24
+cd /project/src/project-linux-kernel/linux-4.9.189
+make O=/project/src/project-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=net/ipv6 -j24
 
 DO_DOCS=False fakeroot make -f debian/rules -j 24 binary-indep; \
 fakeroot make -f debian/rules.gen -j 24 binary-arch_amd64_none
@@ -1004,7 +1004,7 @@ kernel selftests:
 https://docs.kernel.org/dev-tools/kselftest.html?highlight=selftest
 
 On build server:
-ubuntu@src-004:/sonic/src/sonic-linux-kernel/linux-5.10.46$ make -C tools/testing/selftests gen_tar TARGETS="net net/forwarding" -j24
+ubuntu@src-004:/project/src/project-linux-kernel/linux-5.10.46$ make -C tools/testing/selftests gen_tar TARGETS="net net/forwarding" -j24
 
 tests @ srv-linux-kernel/linux-5.10.46/tools/testing/selftests/kselftest_install/
 
@@ -1406,7 +1406,7 @@ Print code line using unstripped binary from gdb provided code location address
 /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xea) [0x7f8ee1005d0a]
 /home/admin/xtables-nft-multi(+0x904a) [0x5639e8d6204a]
 
-ps407411@sonic-lvn-csg-001:/sonic/src/iptables$ gdb ./xtables-nft-multi
+ubuntu@project-server-001:/project/src/iptables$ gdb ./xtables-nft-multi
 GNU gdb (Debian 10.1-1.7) 10.1.90.20210103-git
 Copyright (C) 2021 Free Software Foundation, Inc.
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
