@@ -1,0 +1,43 @@
+<START>
+============================================
+generate patch from prev commit
+
+git format-patch -n HEAD^
+
+
+diff of last commit
+git diff HEAD^ HEAD
+
+diff of only file
+git diff HEAD^ HEAD -- ./file
+
+Names and status of changed files
+
+git diff HEAD~5 HEAD --name-status
+
+Diff of a particular commit
+
+git diff d9d9df04^ d9d9df04
+
+<END>
+<START>
+============================================
+Updating forked repo from upstream master
+
+git remote add upstream https://github.com/Azure/sonic-utilities.git
+
+git fetch upstream
+
+git checkout master
+
+git rebase upstream/master
+
+#Resolve all conflicts, gmerge; git rebase --continue ;
+
+git push -f origin master
+
+
+<END>
+<START>
+======================================================================
+

@@ -1,0 +1,423 @@
+<START>
+============================================
+
+Column selection:
+
+
+Print only last column:
+cat citi_credit  | awk  '{print $NF}'
+
+Print only last but one column:
+awk '{$NF=""}1' citi_credit | cut -d " " -f 3-
+
+tail -5 icici_credit | awk '{print $(NF-1)}'
+
+Print everything except last column:
+awk '{$NF=""}1' citi_credit
+
+Print all except 1st column
+awk '{for (i=2; i<=NF; i++) print $i}' citi_credit
+
+<END>
+<START>
+============================================
+
+Screen
+
+to send ctrl-a q to current window
+screen -S 101886.vs -X  stuff '^aq'
+
+
+<END>
+<START>
+============================================
+
+Update VIM to 8.2
+
+sudo apt install software-properties-common -y
+
+sudo add-apt-repository ppa:jonathonf/vim
+
+sudo apt-get update; sudo apt-get install -y vim
+
+
+<END>
+<START>
+============================================
+
+VIM: Terminal mode
+
+https://vimhelp.org/terminal.txt.html#terminal-typing
+
+:term[inal] to open split terminal window
+:tab term[inal] to open terminal in tab
+
+In terminal mode:
+To go to normal vim mode: ctrl-w N
+To go to vim command mode: ctrl-w :
+
+To scroll in vim terminal: ctrl-w N
+Then you can use the usual Vim commands to move around, cut, copy and paste
+press i or a to resume using the terminal as before.
+
+Change size of a split window:
+More tips :help resize
+
+To increase current window height: CTRL-W +
+To decrease current window height: CTRL-W -
+
+Decrease current window height by N: :res[ize] -N
+Increase current window height by N: :res[ize] +N
+
+To decrease current window width: CTRL-W <
+To increase current window width: CTRL-W >
+
+
+Set current window height to {nr}: z{nr}<CR>
+
+Set current window width to N: :vertical res[ize] [N]
+
+Make all windows equal : Ctrl-w =
+
+To make current window full screen:
+Expand to full screen horizontally: CTRL-W _
+
+Expand to full screen vertically: CTRL-W |
+
+Move current window left long: CTRL-W H
+Move current window down wide: CTRL-W J
+Move current window up wide: CTRL-W K
+Move current window right long: CTRL-W L
+
+Tabs:
+
+go to next tabpage, same as gt: CTRL-W gt
+command :tabn
+
+go to previous tabpage, same as gT: CTRL-W gT
+command :tabp
+
+To convert window to tab, CTRL-W T
+
+To move cursor to specific line use command :set mouse=a
+
+<END>
+<START>
+============================================
+
+arping -q -w 0 -c 1 100.1.1.10
+
+
+ping6 -n -q -i 0 -c 1 -W 2 100::10
+
+<END>
+<START>
+============================================
+
+
+Setup xserver in lxc
+
+https://discuss.linuxcontainers.org/t/xserver-inside-lxc-container/5022
+
+<END>
+<START>
+============================================
+
+To kill/close any tcp connection using ss
+
+root@sonic:~# ss -ta | egrep "ssh|State"
+State     Recv-Q Send-Q  Local Address:Port      Peer Address:Port Process
+LISTEN    0      128           0.0.0.0:ssh            0.0.0.0:*
+ESTAB     0      0       10.59.139.219:ssh      10.122.80.134:60683
+LISTEN    0      128              [::]:ssh               [::]:*
+root@sonic:~# ss -K src = 10.59.139.219 sport = 22
+Netid       State       Recv-Q       Send-Q             Local Address:Port              Peer Address:Port       Process
+tcp         ESTAB       0            0                  10.59.139.219:ssh              10.122.80.134:60683
+root@sonic:~#
+root@sonic:~# ss -ta | egrep "ssh|State"
+State     Recv-Q Send-Q  Local Address:Port     Peer Address:Port Process
+LISTEN    0      128           0.0.0.0:ssh           0.0.0.0:*
+LISTEN    0      128              [::]:ssh              [::]:*
+root@sonic:~#
+root@sonic:~#
+
+root@sonic:~# ss -peima | grep -i neighsyncd -B1
+u_str              ESTAB               0                    0                                                                         /var/run/redis/redis.sock 118157113                                            * 118157112                 users:(("redis-server",pid=1039,fd=492)) skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0) <-> ino:31386 dev:0/20
+
+root@sonic:~# ss -peim0 | grep -i iccpd -B1
+        ver:0 cpy_thresh:0 flags( running ) skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)
+p_dgr   0        0                     arp:*                            *        users:(("iccpd",pid=32521,fd=10)) ino:118168932 sk:13c2
+
+
+root@sonic:~# ss -peima --socket=netlink | grep -i ntp
+UNCONN  0       0                 rtnl:ntpd/10340                        *       sk=0 cb=0 groups=0x00000771     skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)
+UNCONN  0       0                 rtnl:ntpd/10340                        *       sk=0 cb=0 groups=0x00000771     skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)
+root@sonic:~#
+
+root@sonic:~# ss -peim0 | grep -i iccp -A1
+p_dgr   213504   0                     arp:*                            *        users:(("iccpd",pid=32521,fd=10)) ino:118168932 sk:13c2
+        ver:0 cpy_thresh:0 flags( running ) skmem:(r213504,rb212992,t0,tb212992,f0,w0,o0,bl0,d1155)
+
+<START>
+============================================
+
+To test tcp connection on a port
+
+root@sonic:~# echo < /dev/tcp/127.0.0.1/23
+-bash: connect: Connection refused
+-bash: /dev/tcp/127.0.0.1/23: Connection refused
+root@sonic:~# echo < /dev/tcp/127.0.0.1/22
+
+root@sonic:~#
+
+<END>
+<START>
+============================================
+
+debug netlink messages:
+
+Ex:
+
+strace -s 100 -f -o out -x ip route add 172.16.5.0/24 via 127.0.0.1 dev lo
+
+output:
+
+socket(PF_NETLINK, SOCK_RAW|SOCK_CLOEXEC, NETLINK_ROUTE) = 3
+bind(3, {sa_family=AF_NETLINK, pid=0, groups=00000000}, 12) = 0
+getsockname(3, {sa_family=AF_NETLINK, pid=13058, groups=00000000},
+sendmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000},
+    msg_iov(1)=[{"\x34\x00\x00\x00\x18\x00\x05\x06\x6e\xbc\xac\x59\x00\x00\x00\x00\x02\x18\x00\x00\xfe\x03\x00\x01\x00\x00\x00\x00\x08\x00\x01\x00\xac\x10\x05\x00\x08\x00\x05\x00\x7f\x00\x00\x01\x08\x00\x04\x00\x01\x00\x00\x00",
+    52}], msg_controllen=0, msg_flags=0}, 0) = 52
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0,
+    msg_iov(1)=[{"\x24\x00\x00\x00\x02\x00\x00\x00\x6e\xbc\xac\x59\x02\x33\x00\x00\x00\x00\x00\x00\x34\x00\x00\x00\x18\x00\x05\x06\x6e\xbc\xac\x59\x00\x00\x00\x00",
+    32768}], msg_controllen=0, msg_flags=0}, 0) = 36
+
+
+decode pkt dumps:
+Use: http://docs.pyroute2.org/debug.html.
+
+pip install pyroute2
+wget https://raw.githubusercontent.com/svinota/pyroute2/72e444714f37a313fb15bdb22734e517feefa9e9/tests/decoder/decoder.py
+python decoder.py pyroute2.netlink.rtnl.rtmsg.rtmsg message
+
+
+
+{'attrs': [('RTA_DST', '172.16.5.0'),
+           ('RTA_GATEWAY', '127.0.0.1'),
+           ('RTA_OIF', 1)],
+ 'dst_len': 24,
+ 'family': 2,
+ 'flags': 0,
+ 'header': {'flags': 1541,
+            'length': 52,
+            'pid': 0,
+            'sequence_number': 1504493250,
+            'type': 24},
+ 'proto': 3,
+ 'scope': 0,
+ 'src_len': 0,
+ 'table': 254,
+ 'tos': 0,
+ 'type': 1}
+
+
+
+capture netlink messages: tcpdump + wireshark
+# create the network interface
+sudo ip link add  nlmon0 type nlmon
+sudo ip link set dev nlmon0 up
+sudo tcpdump -i nlmon0 -w netlink.pcap # capture your packets
+wireshark netlink.pcap # look at the results with wireshark
+tshark -r netlink.pcap -Tek
+
+
+
+<END>
+<START>
+============================================
+
+NFTABLES:
+
+List all rules:
+nft list ruleset
+
+
+nft list table bridge filter -a -n
+
+
+Adding rules:
+
+apt-get install -y nftables
+nft add chain bridge filter dhcp
+nft add rule bridge filter INPUT ether type vlan vlan type ip meta l4proto udp jump dhcp
+nft add rule bridge filter dhcp udp dport 67 counter drop
+nft add rule bridge filter dhcp udp dport 68 counter drop
+
+nft delete rule bridge filter FORWARD handle 5
+
+
+<END>
+<START>
+============================================
+
+Download all directories and subdirectories recursively
+wget -r --no-parent http://127.0.0.1:9008/opt/projects/release/jobs/8605/
+
+ubuntu@ubuntu:127.0.0.1:9008$ tree
+.
+└── opt
+    └── projects
+        └── release
+            └── jobs
+                └── 8605 
+
+
+$pwd
+/proc/net/rpc
+$tree
+.
+├── auth.rpcsec.context
+│   ├── channel
+│   └── flush
+├── auth.rpcsec.init
+│   ├── channel
+│   └── flush
+├── auth.unix.gid
+│   ├── channel
+│   ├── content
+│   └── flush
+├── auth.unix.ip
+│   ├── channel
+│   ├── content
+│   └── flush
+├── nfs4.idtoname
+│   ├── channel
+│   ├── content
+│   └── flush
+├── nfs4.nametoid
+│   ├── channel
+│   ├── content
+│   └── flush
+├── nfsd.export
+│   ├── channel
+│   ├── content
+│   └── flush
+├── nfsd.fh
+│   ├── channel
+│   ├── content
+│   └── flush
+└── use-gss-proxy
+
+8 directories, 23 files
+$
+
+<END>
+<START>
+============================================
+Recursive find and exec on each match
+
+find . -name '*.tar.gz' -exec echo {} \;
+
+<END>
+<START>
+============================================
+
+To extract .deb file
+dpkg-deb -xv swss_1.0.0_amd64.deb .
+
+<END>
+<START>
+============================================
+
+Below are the steps to configure rclone for Gdrive sync.
+
+
+
+Step-1:
+
+Edit the .bashrc file in your Home directory (vi ~/.bashrc) and add the following line
+
+export RCLONEVER=1.55.1
+
+
+
+source ~/.bashrc
+
+
+
+Step-2:
+
+rm -rf ~/.config/rclone/rclone.conf
+
+rclone config create remote drive scope drive config_is_local false
+
+Authorize using the displayed link, It can be opened in any browser, outside the VDI.
+
+
+
+Step-3: Please run the python script using below command
+
+tools/create_gdriveremotes.py
+
+
+
+Once the above steps are done, we can see the list of remote team drives with below command.
+
+rclone listremotes
+
+
+
+To list the files and directories in a team drive.
+
+Directories:
+
+rclone lsd “<team_drive>”:
+
+
+
+Files:
+
+rclone ls “<team_drive>”:
+
+
+
+Please select a drive name from the list and we can copy to and from VDI using the below command.
+
+rclone copy <file>  "<team_drive>": “<path to destination>”
+
+
+
+To copy from team drive to VDI
+
+rclone copy "<team_drive>":<path to file> <path to destination>
+
+
+Backup:
+========
+ubuntu@ubuntu:~$ rclone lsd remote:BACKUP/lvn_home
+          -1 2021-12-06 00:50:59        -1 DEC-2021
+ubuntu@ubuntu:~$ rclone copy /home/ubuntu remote:BACKUP/lvn_home/DEC-2021/.
+
+<END>
+<START>
+============================================
+
+apt-get install -y libnl-3-dev
+apt-get install -y libnl-genl-3-dev
+gcc nlapi.c -lnl-3 -lnl-route-3 -I/usr/include/libnl3
+
+
+<END>
+<START>
+============================================
+
+To enable ssh auto login from client to server
+
+On client:
+
+ssh-keygen -t rsa
+ssh-copy-id ps407411@lvnvde0791.lvn.broadcom.net
+
+<END>
+<START>
+============================================

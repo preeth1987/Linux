@@ -1,0 +1,1458 @@
+<START>
+============================================
+
+Kernel dynamic tracing:
+
+root@sonic:/sys/kernel/debug/tracing/events/fib6# echo 1 > enable
+root@sonic:/sys/kernel/debug/tracing/events/fib6# echo 1 fib6_table_lookup/
+enable   filter   format   id       trigger
+root@sonic:/sys/kernel/debug/tracing/events/fib6# echo 1 > fib6_table_lookup/enable
+root@sonic:/sys/kernel/debug/tracing/events/fib6# dmesg -cT
+root@sonic:/sys/kernel/debug/tracing/events/fib6# cd fib6_table_lookup/
+root@sonic:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup# ls
+enable  filter  format  id  trigger
+root@sonic:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup# echo stacktrace > trigger
+root@sonic:/sys/kernel/debug/tracing/events/fib6/fib6_table_lookup#
+
+To remove stacktrace:
+
+echo '!stacktrace' > trigger
+
+Conditional:
+echo 'stacktrace:5 if bytes_req >= 65536' > trigger
+
+Neigh event tracing:
+
+To check which events enabled:
+
+cat /sys/kernel/debug/tracing/set_event
+
+root@sonic:/sys/kernel/debug/tracing/events/neigh# echo 1 > enable
+cat /sys/kernel/debug/tracing/trace_pipe | grep -i "failed.*100.0.0.3"
+
+Filtering
+cat format
+based on above use echo "<field> == <value>" > filter
+echo "dev == \"Vlan100\"" > filter
+echo "dev == \"Vlan100\" || dev == \"Ethernet0\"" > filter
+
+<END>
+<START>
+============================================
+eBPF logging
+
+  Netlink monitor
+      modprobe nlmon
+      ip link add nlmon0 type nlmon
+      ip link set nlmon0 up
+      tcpdump -i nlmon0 -w nlmsg.pcap
+      apt-get install netsniff-ng
+      netsniff-ng --in nlmsg.pcap
+      netsniff-ng -i nlmon0 -o dump.pcap -s
+       tcpdump -i nlmon0 -w nlmsg3.pcap --direction in
+
+<END>
+<START>
+============================================
+
+XDP
+
+# xdp-filter load --mode skb eth0
+
+# xdpdump -D
+if_index  if_name           XDP program entry function
+--------  ----------------  --------------------------------------------------
+1         lo                <No XDP program loaded!>
+2         eno1              xdp_dispatcher()
+                              xdpfilt_alw_all()
+
+# ./xdpdump -i eno1 -x --rx-capture entry,exit
+listening on eno1, ingress XDP program ID 132 func xdp_dispatcher, capture mode entry/exit, capture size 262144 bytes
+1601027763.302161077: @entry: packet size 60 bytes, captured 60 bytes on if_index 2, rx queue 0, id 1
+  0x0000:  ff ff ff ff ff ff 00 02 d1 19 47 bd 08 06 00 01  ..........G.....
+  0x0010:  08 00 06 04 00 01 00 02 d1 19 47 bd ac 10 01 cb  ..........G.....
+  0x0020:  ff ff ff ff ff ff ac 10 01 cb 00 00 00 00 00 00  ................
+  0x0030:  00 00 e0 00 00 00 05 00 00 00 04 00              ............
+1601027763.302167163: @exit[PASS]: packet size 60 bytes, captured 60 bytes on if_index 2, rx queue 0, id 1
+  0x0000:  ff ff ff ff ff ff 00 02 d1 19 47 bd 08 06 00 01  ..........G.....
+  0x0010:  08 00 06 04 00 01 00 02 d1 19 47 bd ac 10 01 cb  ..........G.....
+  0x0020:  ff ff ff ff ff ff ac 10 01 cb 00 00 00 00 00 00  ................
+  0x0030:  00 00 e0 00 00 00 05 00 00 00 04 00              ............
+^C
+2 packets captured
+0 packets dropped by perf ring
+
+# xdpdump -i eno1 -w - | tcpdump -r - -n
+listening on eno1, ingress XDP program xdpfilt_dny_all, capture mode entry, capture size 262144 bytes
+reading from file -, link-type EN10MB (Ethernet)
+15:55:09.075887 IP 192.168.122.1.40928 > 192.168.122.100.ssh: Flags [P.], seq 3857553815:3857553851, ack 3306438882, win 501, options [nop,nop,TS val 1997449167 ecr 1075234328], length 36
+15:55:09.077756 IP 192.168.122.1.40928 > 192.168.122.100.ssh: Flags [.], ack 37, win 501, options [nop,nop,TS val 1997449169 ecr 1075244363], length 0
+15:55:09.750230 IP 192.168.122.1.40928 > 192.168.122.100.ssh: Flags [P.], seq 36:72, ack 37, win 501, options [nop,nop,TS val 1997449842 ecr 1075244363], length 36
+
+<END>
+<START>
+============================================
+
+Linux Kernel articles
+https://lwn.net/Kernel/Index/
+<END>
+<START>
+============================================
+Kernel module examples:
+https://github.com/vincentbernat/network-lab/blob/master/lab-routes-ipv4/kbench_mod.c
+
+<END>
+<START>
+============================================
+funclatency - Time functions and print latency as a histogram.
+
+Ex:
+https://vincent.bernat.ch/en/blog/2017-linux-kernel-microbenchmark
+
+https://vincent.bernat.ch/en/blog/2017-ipv4-route-lookup-linux
+
+<END>
+<START>
+============================================
+lssubsys -am
+
+root@ubuntu:~# lssubsys -am | grep -i l3mdev
+l3mdev /sys/fs/cgroup/l3mdev
+root@ubuntu:~#
+
+
+<END>
+<START>
+============================================
+
+https://man7.org/linux/man-pages/man8/rtstat.8.html
+
+lnstat - unified linux network statistics
+
+
+       # lnstat -d
+              Get a list of supported statistics files.
+
+       # lnstat -k arp_cache:entries,rt_cache:in_hit,arp_cache:destroys
+              Select the specified files and keys.
+
+       # lnstat -i 10
+              Use an interval of 10 seconds.
+
+       # lnstat -f ip_conntrack
+              Use only the specified file for statistics.
+
+       # lnstat -s 0
+              Do not print a header at all.
+
+       # lnstat -s 20
+              Print a header at start and every 20 lines.
+
+       # lnstat -c -1 -i 1 -f rt_cache -k entries,in_hit,in_slow_tot
+              Display statistics for keys entries, in_hit and in_slow_tot of
+              field rt_cache every second.
+
+<END>
+<START>
+============================================
+
+apt-get install iperf
+
+iperf -c 4.0.1.6 -u -b 100m
+
+In the above example, i have used -b option to specify the bandwidth to use
+(because by default iperf UDP only used 1Mbps, i will recommend using your full available bandwidth to get an idea)
+
+
+iperf -c 4.0.1.6 -u -b 100000000m
+
+for (( i=0;i<=1000;i++ )); do iperf -c 4.0.1.6 -u -b 100000000m; done
+
+
+
+<END>
+<START>
+============================================
+
+https://opensourceforu.com/2011/01/understanding-a-kernel-oops/
+
+
+
+Objdump allows you view the source + the assembly and line numbers:
+objdump -S your_object_file.o this will not only list the assembly but also the corresponding source code assuming the debug symbols are added when compiling.
+
+
+<END>
+<START>
+============================================
+The advantage of RCU is that it allows for updates while other threads
+are accessing the data.  The rtnl_lock is just meant to prevent
+multiple writers from updating the data simultaneously.  So between
+writers the rtnl_lock is used to keep things synchronized, but between
+writers and readers the mechanism that is meant to protect the data
+and keep it sane is RCU.
+
+For sync across writers use rtnl_lock(), for sync across readers and writers use RCU.
+
+/*
+ * The @dev_base_head list is protected by @dev_base_lock and the rtnl
+ * semaphore.
+ *
+ * Pure readers hold dev_base_lock for reading, or rcu_read_lock()
+ *
+ * Writers must hold the rtnl semaphore while they loop through the
+ * dev_base_head list, and hold dev_base_lock for writing when they do the
+ * actual updates.  This allows pure readers to access the list even
+ * while a writer is preparing to update it.
+ *
+ * To put it another way, dev_base_lock is held for writing only to
+ * protect against pure readers; the rtnl semaphore provides the
+ * protection against other writers.
+ *
+ * See, for example usages, register_netdevice() and
+ * unregister_netdevice(), which must be called with the rtnl
+ * semaphore held.
+ */
+Is the correct usage is to hold both rtnl_lock() and dev_base_lock when modifying a member of a struct net_device?  The wording seems vague as to which synchronization issue holding both covers.  What does “do the actual update” mean, updating the list or structure member?  If the latter, then maybe the concurrent dev_ioctl() case has never been safe
+
+Update:
+
+dev_base_lock is supposed to speed up the readers when
+we only read one or a few fields from netdevice, otherwise it would
+be pretty pointless since we already have the RTNL lock.
+
+Unfortunately, as you noticed, not all of these fields are protected
+by dev_base_lock, therefore the readers who only take this read
+lock is not enough to read an atomic result.
+
+RCU doesn't seem to be the solution here, since it still requires
+a whole copy of netdevice even we only update, for example MTU.
+This is very inconvenient.
+
+It is also kinda messy due to the mix of dev_base_lock, RCU,
+and RTNL.
+
+<END>
+<START>
+============================================
+
+GRO: Generic receive offload
+
+https://lwn.net/Articles/358910/
+
+
+https://i.stack.imgur.com/AtzOz.png
+
+https://blog.packagecloud.io/eng/2016/06/22/monitoring-tuning-linux-networking-stack-receiving-data/#tldr
+
+
+https://netdev.vger.kernel.narkive.com/vgTj4wHq/gso-gro-and-udp-performance
+
+
+<END>
+<START>
+==============================================
+Packet processing:
+
+https://blog.packagecloud.io/eng/2016/06/22/monitoring-tuning-linux-networking-stack-receiving-data
+
+/**
+ *  netif_rx    -   post buffer to the network code
+ *  @skb: buffer to post
+ *
+ *  This function receives a packet from a device driver and queues it for
+ *  the upper (protocol) levels to process.  It always succeeds. The buffer
+ *  may be dropped during processing for congestion control or by the
+ *  protocol layers.
+ *
+ *  return values:
+ *  NET_RX_SUCCESS  (no congestion)
+ *  NET_RX_DROP     (packet was dropped)
+ *
+ */
+int netif_rx(struct sk_buff *skb)
+{
+    trace_netif_rx_entry(skb);
+
+    return netif_rx_internal(skb);
+}
+
+
+/*
+ * get_rps_cpu is called from netif_receive_skb and returns the target
+ * CPU from the RPS map of the receiving queue for a given skb.
+ * rcu_read_lock must be held on entry.
+ */
+
+/*
+ * enqueue_to_backlog is called to queue an skb to a per CPU backlog
+ * queue (may be a remote CPU queue).
+ */
+
+
+<END>
+<START>
+============================================
+
+ip6tables -A OUTPUT -p icmpv6 --icmpv6-type neighbor-solicitation -o sag401.256 -s fe80::82a2:35ff:fe26:455e -t mangle -j MARK --set-mark 2
+
+
+tc filter add dev sag401.256 parent 15:0 protocol ipv6 prio 1 handle 0x2 fw action pedit ex munge eth src set 80:a2:35:26:45:5e
+
+
+
+root@Leaf8:~# tc filter add help
+Usage: tc filter [ add | del | change | replace | show ] dev STRING
+Usage: tc filter get dev STRING parent CLASSID protocol PROTO handle FILTERID pref PRIO FILTER_TYPE
+       [ pref PRIO ] protocol PROTO
+       [ estimator INTERVAL TIME_CONSTANT ]
+       [ root | ingress | egress | parent CLASSID ]
+       [ handle FILTERID ] [ [ FILTER_TYPE ] [ help | OPTIONS ] ]
+
+       tc filter show [ dev STRING ] [ root | ingress | egress | parent CLASSID ]
+Where:
+FILTER_TYPE := { rsvp | u32 | bpf | fw | route | etc. }
+FILTERID := ... format depends on classifier, see there
+OPTIONS := ... try tc filter add <desired FILTER_KIND> help
+root@Leaf8:~#
+root@Leaf8:~#
+root@Leaf8:~#
+root@Leaf8:~# tc filter add action help
+Unknown filter "action", hence option "help" is unparsable
+root@Leaf8:~#
+root@Leaf8:~#
+root@Leaf8:~# tc filter add fw help
+Usage: ... fw [ classid CLASSID ] [ indev DEV ] [ action ACTION_SPEC ]
+       CLASSID := Push matching packets to the class identified by CLASSID with format X:Y
+                  CLASSID is parsed as hexadecimal input.
+       DEV := specify device for incoming device classification.
+       ACTION_SPEC := Apply an action on matching packets.
+       NOTE: handle is represented as HANDLE[/FWMASK].
+             FWMASK is 0xffffffff by default.
+root@Leaf8:~#
+root@Leaf8:~#
+root@Leaf8:~#
+
+
+tc filter add dev eth1 parent 1: protocol ip prio 10 \
+        u32 match ip protocol 1 0xff flowid 1:2 \
+        action pedit munge offset -14 u8 set 0x02 \
+        munge offset -13 u8 set 0x15 \
+        munge offset -12 u8 set 0x15 \
+        munge offset -11 u8 set 0x15 \
+        munge offset -10 u16 set 0x1515 \
+        pipe
+
+tc filter add dev sag401.256 parent 15:0 protocol ipv6 prio 1 handle 0x2 \
+    action pedit munge offset -9 u8 set 0x80 \
+        munge offset -8 u8 set 0xa2 \
+        munge offset -7 u8 set 0x35 \
+        munge offset -6 u8 set 0x26 \
+        munge offset -5 u8 set 0x45 \
+        munge offset -4 u8 set 0x5e \
+        pipe
+
+
+0 is at ip header.
+dst MAC starts at -14
+src MAC at -8
+ethertype at -2
+
+Example:
+tc filter add dev eth0 parent ffff: protocol ip prio 10 u32 \
+match ip src 192.168.1.10/32 flowid 1:2 \
+action pedit munge offset -14 u16 set 0x0000 \
+munge offset -12 u32 set 0x00010100 \
+munge offset -8 u32 set 0x0aaf0100 \
+munge offset -4 u32 set 0x0008ec06 pipe \
+action mirred egress redirect dev eth1
+
+tc filter add dev eth0 parent 1: protocol ipv6 u32 match ip6 src fe80::a action mirred egress mirror dev Vlan401
+
+
+tc filter add dev sag401.256 parent 1: protocol ip prio 10 u32 match ip src 4.0.1.0/24 flowid 1:16 action pedit munge offset -14 u16 set 0x0090 munge offset -12 u32 set 0x9600030a munge offset -8 u32 set 0x00e04ceb munge offset -4 u32 set 0xb1f1a0800
+
+
+
+commit da65128998af043158d181ce2ee647cd1070a4d3
+Author: Jamal Hadi Salim <jhs@mojatatu.com>
+Date:   Tue Oct 11 07:00:45 2016 -0400
+
+    actions: add skbmod action
+
+    This action is intended to be an upgrade from a usability perspective
+    from pedit (as well as operational debugability).
+    Compare this:
+
+    sudo tc filter add dev $ETH parent 1: protocol ip prio 10 \
+    u32 match ip protocol 1 0xff flowid 1:2 \
+    action pedit munge offset -14 u8 set 0x02 \
+        munge offset -13 u8 set 0x15 \
+        munge offset -12 u8 set 0x15 \
+        munge offset -11 u8 set 0x15 \
+        munge offset -10 u16 set 0x1515 \
+        pipe
+
+    to:
+
+    sudo tc filter add dev $ETH parent 1: protocol ip prio 10 \
+    u32 match ip protocol 1 0xff flowid 1:2 \
+    action skbmod dmac 02:15:15:15:15:15
+
+    Or worse, try to debug a policy with destination mac, source mac and
+    etherype. Then make that a hundred rules and you'll get my point.
+
+    The most important ethernet use case at the moment is when redirecting or
+    mirroring packets to a remote machine. The dst mac address needs a re-write
+    so that it doesn't get dropped or confuse an interconnecting (learning) switch
+    or dropped by a target machine (which looks at the dst mac).
+
+    In the future common use cases on pedit can be migrated to this action
+    (as an example different fields in ip v4/6, transports like tcp/udp/sctp
+    etc). For this first cut, this allows modifying basic ethernet header.
+
+    Signed-off-by: Jamal Hadi Salim <jhs@mojatatu.com>
+
+diff --git a/tc/m_skbmod.c b/tc/m_skbmod.c
+
+
+
+<END>
+<START>
+=============================================
+
+for packets marked with values 0x2 using iptables:
+
+
+IP_ADDR_ETH0=`ifconfig eth0 | grep 'inet addr'| cut -d ':' -f 2 | cut -d ' ' -f 1 | tr -d '\n'`
+iptables -t mangle -A OUTPUT -s ${IP_ADDR_ETH0} -p udp --match multiport --dports 319,320 -o eth0 -j MARK --set-mark 2
+
+tc filter add dev eth0 parent 15:0 protocol ip prio 1 handle 0x2 fw action pedit ex munge eth src set ${MAC_ADDR_ETH1} pipe \
+action pedit ex munge ip src set ${IP_ADDR_ETH1}
+
+https://www.systutorials.com/docs/linux/man/8-tc-pedit/
+
+<END>
+<START>
+============================================
+
+arptables -A IN -i sag101.256 --src-mac 00:00:11:AA:BB:CC --arpop="Request" -j DROP
+
+arptables -L
+
+<END>
+<START>
+============================================
+
+ip6tables
+
+https://resources.sei.cmu.edu/tools/downloads/vulnerability-analysis/assets/IPv6/ip6tables_rules.txt
+
+
+ip6tables -A OUTPUT -p icmpv6 --icmpv6-type neighbor-solicitation -o sag101.256 -s fe80::82a2:35ff:fe26:5e -j mangle --mangle-mac-s 01:00:5e:00:01:02
+
+ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -i sag+ -m mac --mac-source 00:00:11:aa:bb:cc -j DROP
+
+ip6tables -D INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -i sag+ -m mac --mac-source 00:00:11:aa:bb:cc -j DROP
+
+ip6tables -A OUTPUT -p icmpv6 --icmpv6-type neighbor-solicitation -o sag401.256 -s fe80::82a2:35ff:fe26:455e -m mac --mac-source 80:a2:35:26:45:5e -j ACCEPT
+
+ip6tables -A FORWARD -p icmpv6 --icmpv6-type neighbor-solicitation -o sag401.256 -s fe80::82a2:35ff:fe26:455e -m mac --mac-source 80:a2:35:26:45:5e -j ACCEPT
+ERROR: ip6_tables: mac match: used from hooks OUTPUT, but only valid from PREROUTING/INPUT/FORWARD
+
+
+ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -i Vlan401 -s fe80::82a2:35ff:fe26:455e -j ACCEPT
+
+
+ebtables -A OUTPUT -s 00:00:11:AA:BB:CC -p ip6 --ip6-source fe80::82a2:35ff:fe26:455e -j CONTINUE
+
+
+ip6tables -A FORWARD -p icmpv6 --icmpv6-type neighbor-advertisement -d fe80::/64 -j LOG
+
+ip6tables -A FORWARD -i sag+ -p icmpv6 --icmpv6-type neighbor-advertisement -d fe80::/64 -j DROP
+
+ip6tables -D FORWARD -p icmpv6 --icmpv6-type neighbor-advertisement -d fe80::/64 -j DROP
+<END>
+<START>
+============================================
+Crash kdump decoding
+
+
+Kdump analysis example:
+
+apt-get update; apt-get install -y crash ar
+root@Leaf3:/home/admin# ls
+config.py  kdump.202001080712  linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb  main.py
+root@Leaf3:/home/admin# ar x linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb
+root@Leaf3:/home/admin# ls
+config.py  control.tar.gz  data.tar.xz  debian-binary  kdump.202001080712  linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb  main.py
+
+root@Leaf3:/home/admin# tar xvf data.tar.xz
+./
+./usr/
+./usr/lib/
+./usr/lib/debug/
+./usr/lib/debug/.build-id/
+./usr/lib/debug/.build-id/44/
+./usr/lib/debug/.build-id/62/
+./usr/lib/debug/.build-id/e4/
+./usr/lib/debug/boot/
+./usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
+.
+.
+.
+
+root@Leaf3:/home/admin# ls usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
+usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
+root@Leaf3:/home/admin# crash  usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64  ./kdump.202001080712
+
+crash 7.1.7
+Copyright (C) 2002-2016  Red Hat, Inc.
+Copyright (C) 2004, 2005, 2006, 2010  IBM Corporation
+Copyright (C) 1999-2006  Hewlett-Packard Co
+Copyright (C) 2005, 2006, 2011, 2012  Fujitsu Limited
+Copyright (C) 2006, 2007  VA Linux Systems Japan K.K.
+Copyright (C) 2005, 2011  NEC Corporation
+Copyright (C) 1999, 2002, 2007  Silicon Graphics, Inc.
+Copyright (C) 1999, 2000, 2001, 2002  Mission Critical Linux, Inc.
+This program is free software, covered by the GNU General Public License,
+and you are welcome to change it and/or distribute copies of it under
+certain conditions.  Enter "help copying" to see the conditions.
+This program has absolutely no warranty.  Enter "help warranty" for details.
+
+GNU gdb (GDB) 7.6
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-unknown-linux-gnu"...
+
+WARNING: kernel relocated [958MB]: patching 75595 gdb minimal_symbol values
+
+      KERNEL: usr/lib/debug/boot/vmlinux-4.9.0-11-2-amd64
+    DUMPFILE: ./kdump.202001080712  [PARTIAL DUMP]
+        CPUS: 8
+        DATE: Wed Jan  8 07:12:38 2020
+      UPTIME: 02:36:34
+LOAD AVERAGE: 143.30, 69.84, 28.98
+       TASKS: 733
+    NODENAME: Leaf3
+     RELEASE: 4.9.0-11-2-amd64
+     VERSION: #1 SMP Debian 4.9.189-3+deb9u2 (2019-11-11)
+     MACHINE: x86_64  (2199 Mhz)
+      MEMORY: 15.9 GB
+       PANIC: "Kernel panic - not syncing: Out of memory: compulsory panic_on_oom is enabled"
+         PID: 17959
+     COMMAND: "CtrEvict.0"
+        TASK: ffff890aa9c6d080  [THREAD_INFO: ffff890aa9c6d080]
+         CPU: 7
+       STATE: TASK_RUNNING (PANIC)
+
+crash> bt
+PID: 17959  TASK: ffff890aa9c6d080  CPU: 7   COMMAND: "CtrEvict.0"
+ #0 [ffff968e89d9b998] machine_kexec at ffffffffbce54c98
+ #1 [ffff968e89d9b9f0] __crash_kexec at ffffffffbcf09521
+ #2 [ffff968e89d9bab0] panic at ffffffffbcf81fac
+ #3 [ffff968e89d9bb38] out_of_memory at ffffffffbcf88ce5
+ #4 [ffff968e89d9bb78] __alloc_pages_slowpath at ffffffffbcf8db6f
+ #5 [ffff968e89d9bc80] __alloc_pages_nodemask at ffffffffbcf8de81
+ #6 [ffff968e89d9bcf0] alloc_pages_current at ffffffffbcfdfad1
+ #7 [ffff968e89d9bd40] filemap_fault at ffffffffbcf86a26
+ #8 [ffff968e89d9bda8] ext4_filemap_fault at ffffffffc0502ac1 [ext4]
+ #9 [ffff968e89d9bdc8] __do_fault at ffffffffbcfb7df9
+#10 [ffff968e89d9be38] handle_mm_fault at ffffffffbcfbbff4
+#11 [ffff968e89d9bee0] __do_page_fault at ffffffffbce63395
+#12 [ffff968e89d9bf50] page_fault at ffffffffbd405b68
+    RIP: 00007fca1fc3d200  RSP: 00007fca25789d38  RFLAGS: 00010282
+    RAX: 00000000fffffffb  RBX: 0000000000000000  RCX: 00007fca24be70c0
+    RDX: 00007fca25789d9c  RSI: 0000000000000001  RDI: 0000000000000000
+    RBP: 00007fca086b5018   R8: 000055a9b1867a10   R9: 00000000ffffffff
+    R10: 00007fca25789d10  R11: 0000000000000246  R12: 00000000001e8480
+    R13: 00007fca23f496c0  R14: 0000000000000000  R15: 00007fca23f49760
+    ORIG_RAX: ffffffffffffffff  CS: 0033  SS: 002b
+crash> dis sysrq_handle_crash
+0xffffffffbd22a550 <sysrq_handle_crash>:        nopl   0x0(%rax,%rax,1) [FTRACE NOP]
+0xffffffffbd22a555 <sysrq_handle_crash+5>:      movl   $0x1,0xa82829(%rip)        # 0xffffffffbdcacd88
+0xffffffffbd22a55f <sysrq_handle_crash+15>:     sfence
+0xffffffffbd22a562 <sysrq_handle_crash+18>:     movb   $0x1,0x0
+0xffffffffbd22a56a <sysrq_handle_crash+26>:     retq
+0xffffffffbd22a56b <sysrq_handle_crash+27>:     nopl   0x0(%rax,%rax,1)
+crash> kmem -i
+                 PAGES        TOTAL      PERCENTAGE
+    TOTAL MEM  3968870      15.1 GB         ----
+         FREE    34154     133.4 MB    0% of TOTAL MEM
+         USED  3934716        15 GB   99% of TOTAL MEM
+       SHARED    14182      55.4 MB    0% of TOTAL MEM
+      BUFFERS       58       232 KB    0% of TOTAL MEM
+       CACHED        0            0    0% of TOTAL MEM
+         SLAB    57170     223.3 MB    1% of TOTAL MEM
+
+   TOTAL SWAP        0            0         ----
+    SWAP USED        0            0    0% of TOTAL SWAP
+    SWAP FREE        0            0    0% of TOTAL SWAP
+
+ COMMIT LIMIT  1984435       7.6 GB         ----
+    COMMITTED  14881291      56.8 GB  749% of TOTAL LIMIT
+crash>
+
+crash> bt
+PID: 30711  TASK: ffff8b6571f71000  CPU: 4   COMMAND: "bash"
+ #0 [ffff8b673fd03a90] machine_kexec at ffffffff99654c98
+ #1 [ffff8b673fd03ae8] __crash_kexec at ffffffff99709521
+ #2 [ffff8b673fd03ba8] crash_kexec at ffffffff99709588
+ #3 [ffff8b673fd03bc0] oops_end at ffffffff996298d3
+ #4 [ffff8b673fd03be0] general_protection at ffffffff99c05c88
+    [exception RIP: br_pass_frame_up+62]
+    RIP: ffffffffc07c27ee  RSP: ffff8b673fd03c98  RFLAGS: 00010207
+    RAX: 021091b841220211  RBX: ffff8b665f3baa00  RCX: ffffd4154dd5789f
+    RDX: 000000000000001f  RSI: ffff8b65d62c3000  RDI: ffff8b665f3baa00
+    RBP: ffff8b66000000f8   R8: 000000000001f158   R9: 000000000000001e
+    R10: ffff8b6568f200b4  R11: ffffffff9995e350  R12: ffff8b66000009b8
+    R13: 0000000000000001  R14: ffff8b66451768c0  R15: 0000000000000000
+    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+ #5 [ffff8b673fd03d08] br_handle_frame_finish at ffffffffc07c2b4b [bridge]
+ #6 [ffff8b673fd03d68] br_handle_frame at ffffffffc07c2e8b [bridge]
+ #7 [ffff8b673fd03dd8] __netif_receive_skb_core at ffffffff99af8e38
+ #8 [ffff8b673fd03e70] netif_receive_skb_internal at ffffffff99af95ef
+ #9 [ffff8b673fd03e98] napi_gro_receive at ffffffff99afa438
+#10 [ffff8b673fd03eb8] gro_cell_poll at ffffffffc0a80390 [vxlan]
+#11 [ffff8b673fd03ee0] net_rx_action at ffffffff99af9e66
+#12 [ffff8b673fd03f50] __do_softirq at ffffffff99c085ad
+#13 [ffff8b673fd03fb8] irq_exit at ffffffff996812a2
+--- <IRQ stack> ---
+bt: cannot transition from IRQ stack to current process stack:
+        IRQ stack pointer: ffff8b673fd03a90
+    process stack pointer: ffffffff9968127a
+       current stack base: ffffaec30b96c000
+crash> sk_buff ffff8b65d62c3000 <<<<
+crash> net_device 0xffff8b65d627d000
+
+
+Until after adding the module debuginfo data:
+
+  crash> mod -s ext3
+       MODULE       NAME               SIZE  OBJECT FILE
+  ffffffff8806be00  ext3             168017  /lib/modules/2.6.18-102.el5.perfmon2/kernel/fs/ext3/ext3.ko
+  crash> struct ext3_xattr_search
+  struct ext3_xattr_search {
+      struct ext3_xattr_entry *first;
+      void *base;
+      void *end;
+      struct ext3_xattr_entry *here;
+      int not_found;
+  }
+  SIZE: 40
+crash> px arp_tbl
+arp_tbl = $2 = {
+  family = 0x2,
+  entry_size = 0x188,
+  key_len = 0x4,
+  protocol = 0x8,
+  hash = 0xffffffffa2199200,
+  key_eq = 0xffffffffa2199220,
+  constructor = 0xffffffffa219b040,
+  pconstructor = 0x0,
+  pdestructor = 0x0,
+  proxy_redo = 0xffffffffa219acb0,
+  is_multicast = 0xffffffffa2199240,
+  allow_add = 0x0,
+  id = 0xffffffffa2b80f9d "arp_cache",
+  parms = {
+    net = {
+      net = 0xffffffffa3217540
+    },
+
+
+crash> p/x *(struct net*)0xffffffffa3217540
+$5 = {
+  passive = {
+    refs = {
+      counter = 0x2
+    }
+  },
+
+crash> p/x ((struct net*)0xffffffffa3217540).ipv6.ip6_null_entry
+$8 = 0xffff8b568825ab00
+
+crash> p/x *(struct rt6_info*)0xffff8b568825ab00
+$9 = {
+  dst = {
+    dev = 0xffff8b5680ed1000,
+    ops = 0xffffffffa3217d40,
+    _metrics = 0xffffffffa28fe6c1,
+    expires = 0x0,
+    xfrm = 0x0,
+    input = 0xffffffffa21fd8e0,
+    output = 0xffffffffa21fd900,
+    flags = 0x0,
+    obsolete = 0xffff,
+    header_len = 0x0,
+    trailer_len = 0x0,
+    __refcnt = {
+      counter = 0xffffffff
+    },
+    __use = 0x1,
+    lastuse = 0x0,
+    lwtstate = 0x0,
+    callback_head = {
+      next = 0xffff8b56829be7d8,
+      func = 0x0
+    },
+    error = 0xff9b,
+    __pad = 0x0,
+    tclassid = 0x0
+  },
+
+crash> px *(struct net_device*)0xffff8b5680ed1000
+$10 = {
+  name = "lo\000\000\000\000\000\000\000\000\000\000\000\000\000",
+  name_node = 0xffff8b5680b1a8c0,
+  ifalias = 0x0,
+  mem_end = 0x0,
+  mem_start = 0x0,
+  base_addr = 0x0,
+  irq = 0x0,
+  state = 0x3,
+
+
+crash> net_device 0xffff8b5680ed1000
+struct net_device {
+  name = "lo\000\000\000\000\000\000\000\000\000\000\000\000\000",
+  name_node = 0xffff8b5680b1a8c0,
+  ifalias = 0x0,
+  mem_end = 0,
+  mem_start = 0,
+  base_addr = 0,
+  irq = 0,
+  state = 3,
+  dev_list = {
+    next = 0xffff8b5699420048,
+    prev = 0xffffffffa32175d0
+  },
+
+
+<END>
+<START>
+============================================
+
+
+
+Manually trigger kernel kdump
+
+echo 1 > /proc/sys/kernel/sysrq
+echo c > /proc/sysrq-trigger
+
+<END>
+<START>
+============================================
+
+Kdump analysis
+
+https://www.thegeekstuff.com/2014/05/kdump/
+
+
+
+crash /var/crash/127.0.0.1-2014-03-26-12\:24\:39/vmcore /usr/lib/debug/lib/modules/`uname –r`/vmlinux
+
+crash>
+<END>
+<START>
+============================================
+
+Analyze segfaults
+
+https://utcc.utoronto.ca/~cks/space/blog/linux/KernelSegfaultMessageMeaning
+
+
+
+
+<END>
+<START>
+============================================
+
+Netlink dump filtering:
+
+https://netdevconf.info/0.1/docs/prabhu-rtnetlink_dump_filtering_in_kernel_talk_slides.pdf
+
+
+https://lwn.net/Articles/767880/
+
+https://lwn.net/ml/netdev/20181008031644.15989-1-dsahern@kernel.org/
+
+
+https://patchwork.ozlabs.org/cover/979231/
+
+
+Region snapshot read:
+
+https://www.spinics.net/lists/netdev/msg493206.html
+
+
+<END>
+<START>
+============================================
+ebpf:
+
+http://brendangregg.com/ebpf.html
+
+https://github.com/dsahern/linux/tree/44edef77bd92730e1520b07f5ae2c9f4628738a8/samples/bpf
+
+
+
+<END>
+<START>
+============================================
+
+============================================
+perf record -e fib6:fib6_table_lookup -ag
+perf report
+
+<END>
+<START>
+============================================
+https://www.slideshare.net/brendangregg/kernel-recipes-2017-using-linux-perf-at-netflix
+
+should have CONFIG_PERF_EVENTS=y
+
+
+perf probe --exec=/lib/x86_64-linux-gnu/libc-2.24.so --add malloc
+
+perf stat -a -e probe_libc:malloc -I 10000
+
+<END>
+<START>
+============================================
+
+
+user space & kernel space probing: dynamic tracing
+Probing:
+
+https://opensource.com/article/17/7/dynamic-tracing-linux-user-and-kernel-space
+
+
+<END>
+<START>
+============================================
+kprobes:
+
+; disable all events, just to insure that we see only kprobe output in trace.
+# echo 0 > /sys/kernel/debug/tracing/events/enable
+; disable kprobe events until probe points are inseted.
+# echo 0 > /sys/kernel/debug/tracing/events/kprobes/enable
+; clear out all the events from kprobe_events, to insure that we see output for
+; only those for which we have enabled
+# echo > /sys/kernel/debug/tracing/kprobe_events
+; insert probe point at kfree
+# echo "p kfree" >> /sys/kernel/debug/tracing/kprobe_events
+; insert probe point at kfree+0x10 with name kfree_probe_10
+# echo "p:kree_probe_10 kfree+0x10" >> /sys/kernel/debug/tracing/kprobe_events
+; insert probe point at kfree return
+# echo "r:kfree_probe kfree" >> /sys/kernel/debug/tracing/kprobe_events
+; enable kprobe events until probe points are inseted.
+# echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
+
+
+
+
+<END>
+<START>
+============================================
+Performance using trace points already added in kernel code
+Help: http://www.brendangregg.com/perf.html
+More : https://lwn.net/Articles/346470/
+
+example:
+https://elixir.bootlin.com/linux/v3.1/source/samples/tracepoints/tracepoint-probe-sample.c
+
+tracepoints in kernel modules:
+https://stackoverflow.com/questions/50125033/how-to-use-tracepoints-in-kernel-module
+
+kernel tracepoints python tutorial:
+https://github.com/iovisor/bcc/blob/master/docs/tutorial_bcc_python_developer.md
+
+
+
+
+http://www.brendangregg.com/perf.html
+
+
+Code: include/trace/events/fib.h fib6.h
+
+
+List all trace points in kernel
+# perf list
+
+Pre-defined tracepoints
+▪ fib:fib_table_lookup
+▪ fib:fib_table_lookup_nh
+▪ fib:fib_validate_source
+▪ fib6:fib6_table_lookup
+
+# perf record -e fib:* -- ip route get fibmatch 192.168.1.1
+default via 10.1.1.253 dev eth0
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.002 MB perf.data (2 samples) ]
+# perf script -F trace:event,trace
+ fib:fib_table_lookup: table 255 oif 0 iif 0 src 0.0.0.0 dst 192.168.1.1 tos 0 scope 0 flags 0
+ fib:fib_table_lookup: table 254 oif 0 iif 0 src 0.0.0.0 dst 192.168.1.1 tos 0 scope 0 flags 0
+fib:fib_table_lookup_nh: nexthop dev eth0 oif 2 src 10.1.1.3
+
+
+Add a return probe for clarity
+
+
+# perf probe fib_table_lookup%return ret=%ax # for x86
+# perf record -e fib:fib_table_lookup -e probe:fib_table_lookup ...
+# perf script -F trace:event,trace
+ fib:fib_table_lookup: table 255 oif 0 iif 0 src 0.0.0.0 dst 192.168.1.1 tos 0 scope 0 flags 0
+ probe:fib_table_lookup: (ffffffff814668a7 <- ffffffff8146c662) ret=0xfffffff5
+ fib:fib_table_lookup: table 254 oif 0 iif 0 src 0.0.0.0 dst 192.168.1.1 tos 0 scope 0 flags 0
+fib:fib_table_lookup_nh: nexthop dev eth0 oif 2 src 10.1.1.3
+ probe:fib_table_lookup: (ffffffff814668a7 <- ffffffff8146c662) ret=0x0
+
+
+perf record -e net:* -ag
+
+perf report
+
+<END>
+<START>
+============================================
+Networking Documentation:
+
+https://www.kernel.org/doc/Documentation/networking/
+
+
+sysctl:
+
+https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
+
+sudo sysctl -w net.ipv6.route.max_size=128000
+
+sudo sysctl -w net.ipv4.neigh.default.gc_thresh1=160000
+sudo sysctl -w net.ipv4.neigh.default.gc_thresh2=200000
+sudo sysctl -w net.ipv4.neigh.default.gc_thresh3=250000
+
+sudo sysctl -w net.ipv6.neigh.default.gc_thresh1=80000
+sudo sysctl -w net.ipv6.neigh.default.gc_thresh2=120000
+sudo sysctl -w net.ipv6.neigh.default.gc_thresh3=160000
+
+<END>
+<START>
+============================================
+
+List of vital functions in kernel
+
+https://blog.packagecloud.io/eng/2016/06/22/monitoring-tuning-linux-networking-stack-receiving-data/#tldr
+
+<END>
+<START>
+============================================
+
+/sys/kernel/debug/kprobes/blacklist : blacklisted APIs for kprobe
+
+/proc/kallsyms
+
+
+Tools for kernel crash
+
+syzkaller
+https://github.com/google/syzkaller
+
+<END>
+<START>
+============================================
+
+compiling:
+
+
+ubuntu@sonic-lvn-csg-004:/sonic/src/sonic-linux-kernel/linux-5.10.162$ make O=/sonic/src/sonic-linux-kernel/linux-5.10.162/debian/build/build_amd64_none_amd64/ obj=net/bridge -j24
+
+linux-4.9.168$ make O=/sonic/src/sonic-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=drivers/net/vrf.o -j24
+
+
+cd /sonic/src/sonic-linux-kernel/linux-4.9.189
+make O=/sonic/src/sonic-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=net/bridge -j24
+
+
+Compiling only selected module:
+
+bb make sonic-slave-bash
+
+cd /sonic/src/sonic-linux-kernel/linux-4.9.189
+make O=/sonic/src/sonic-linux-kernel/linux-4.19.118/debian/build/build_amd64_none_amd64/ obj=net/ipv6 -j24
+
+DO_DOCS=False fakeroot make -f debian/rules -j 24 binary-indep; \
+fakeroot make -f debian/rules.gen -j 24 binary-arch_amd64_none
+
+scp target/debs/buster/linux-image-4.9.0-9-2-amd64_4.9.168-1+deb9u3_amd64.deb admin@10.59.136.2:/home/admin
+
+
+in 5.10 kernel if incremental build fails with zlib off, try rebuild after below steps in bb-shell:
+sudo ln -s /usr/include/zconf.h /usr/local/include/zconf.h
+sudo ln -s /usr/include/zlib.h /usr/local/include/zlib.h
+
+
+
+<END>
+<START>
+============================================
+
+kernel selftests:
+
+https://docs.kernel.org/dev-tools/kselftest.html?highlight=selftest
+
+On build server:
+ubuntu@src-004:/sonic/src/sonic-linux-kernel/linux-5.10.46$ make -C tools/testing/selftests gen_tar TARGETS="net net/forwarding" -j24
+
+tests @ srv-linux-kernel/linux-5.10.46/tools/testing/selftests/kselftest_install/
+
+copy:
+
+scp -r kselftest_install ubuntu@10.59.139.209:/home/ubuntu/kselftest/.
+
+Runs:
+
+root@pytest_vm:/home/ubuntu/kselftest/kselftest_install# ./run_kselftest.sh -l
+net:reuseport_bpf
+net:reuseport_bpf_cpu
+net:reuseport_bpf_numa
+net:reuseport_dualstack
+net:reuseaddr_conflict
+net:tls
+net:run_netsocktests
+net:run_afpackettests
+net:test_bpf.sh
+net:netdevice.sh
+net:rtnetlink.sh
+net:xfrm_policy.sh
+net:test_blackhole_dev.sh
+net:fib_tests.sh
+net:fib-onlink-tests.sh
+net:pmtu.sh
+net:udpgso.sh
+net:ip_defrag.sh
+net:udpgso_bench.sh
+net:fib_rule_tests.sh
+net:msg_zerocopy.sh
+net:psock_snd.sh
+net:udpgro_bench.sh
+net:udpgro.sh
+net:test_vxlan_under_vrf.sh
+net:reuseport_addr_any.sh
+net:test_vxlan_fdb_changelink.sh
+net:so_txtime.sh
+net:ipv6_flowlabel.sh
+net:tcp_fastopen_backup_key.sh
+net:fcnal-test.sh
+net:l2tp.sh
+net:traceroute.sh
+net:fin_ack_lat.sh
+net:fib_nexthop_multiprefix.sh
+net:fib_nexthops.sh
+net:altnames.sh
+net:icmp_redirect.sh
+net:ip6_gre_headroom.sh
+net:route_localnet.sh
+net:reuseaddr_ports_exhausted.sh
+net:txtimestamp.sh
+net:vrf-xfrm-tests.sh
+net:rxtimestamp.sh
+net:devlink_port_split.py
+net:drop_monitor_tests.sh
+net:vrf_route_leaking.sh
+
+root@pytest_vm:/home/ubuntu/kselftest# ./run_kselftest.sh -c net -t net:netdevice.sh
+TAP version 13
+1..48
+# selftests: net: netdevice.sh
+# SKIP: eth0: interface already up
+# PASS: eth0: ethtool list features
+# Cannot get register dump: Operation not supported
+# SKIP: eth0: ethtool dump not supported
+# PASS: eth0: ethtool stats
+# SKIP: eth0: interface kept up
+ok 1 selftests: net: netdevice.sh
+
+
+<END>
+<START>
+============================================
+
+Linux kernel performance tuning
+
+https://access.redhat.com/sites/default/files/attachments/20150325_network_performance_tuning.pdf
+
+<END>
+<START>
+============================================
+
+iproute2 doc
+http://www.policyrouting.org/iproute2.doc.html
+
+kuznet@alisa~ $ ip -s n ls 193.233.7.254
+
+193.233.7.254 dev eth0 lladdr 00000c763f85 ref 5 used 12/13/20 \
+
+nud reachable
+{used/confirmed/updated}
+The entry was used 12 seconds ago.
+The entry was confirmed 13 seconds ago.
+The entry was updated 20 seconds ago.
+
+<END>
+<START>
+============================================
+
+
+linux selftests
+copy to dut:
+scp -r src/linux-kernel/linux-4.19.118/tools/testing/selftests admin@10.59.140.37:
+
+sudo apt-get install -y netsniff-ng mz
+
+cd/home/admin/selftests/net/forwarding
+#Sample topology in forwarding.config
+ln -s forwarding.config.sample forwarding.config
+
+./router.sh
+
+<END>
+<START>
+============================================
+
+At this point all commands run in the shell (e.g, apt) have sockets
+automatically bound to the VRF (see output of ss -ap 'dev == <vrf>'),
+including processes not running as root.
+
+root@VS1:~# ss -ap 'dev == Vrf-10'
+Netid  State      Recv-Q Send-Q Local Address:Port                 Peer Address:Port
+tcp    LISTEN     0      128    *%Vrf-10:bgp                   *:*                     users:(("bgpd",pid=7595,fd=25))
+tcp    LISTEN     0      128    ::%Vrf-10:bgp                  :::*                     users:(("bgpd",pid=7595,fd=26))
+root@VS1:~#
+
+<END>
+<START>
+============================================
+
+https://jvns.ca/blog/2017/09/05/finding-out-where-packets-are-being-dropped/
+
+sudo apt-get  --fix-broken install -y pkg-config
+sudo apt-get install -y libpcap-dev binutils-dev libreadline-dev  libnl-genl-3-dev libnl-3-dev libnl-genl-3-dev binutils-dev libreadline6-dev git
+sudo apt-get install -y automake autoconf gcc g++
+sudo modprobe drop_monitor
+git clone https://github.com/nhorman/dropwatch
+cd drop_watch/src
+vim Makefile # comment out the -Werror argument to gcc
+make
+
+
+
+sudo ./dropwatch -l kas
+Initalizing kallsyms db
+dropwatch> start
+Enabling monitoring...
+Kernel monitoring activated.
+Issue Ctrl-C to stop monitoring
+
+1 drops at tcp_v4_do_rcv+cd (0xffffffff81799bad)
+10 drops at tcp_v4_rcv+80 (0xffffffff8179a620)
+1 drops at sk_stream_kill_queues+57 (0xffffffff81729ca7)
+4 drops at unix_release_sock+20e (0xffffffff817dc94e)
+1 drops at igmp_rcv+e1 (0xffffffff817b4c41)
+1 drops at igmp_rcv+e1 (0xffffffff817b4c41)
+
+
+sudo apt-get install libbfd-dev
+wget http://10.59.136.11/dropwatch.1
+
+sudo modprobe drop_monitor
+sudo apt-get  --fix-broken install -y pkg-config
+sudo apt-get install -y libpcap-dev binutils-dev libreadline-dev  libnl-genl-3-dev
+chmod +x ./dropwatch
+./dropwatch
+./dropwatch -l kas
+ln -s  /usr/lib/x86_64-linux-gnu/libbfd-2.31.1-system.so /usr/lib/x86_64-linux-gnu/libbfd-2.26.1-system.so
+ln -s /usr/lib/x86_64-linux-gnu/libreadline.so.7 /usr/lib/x86_64-linux-gnu/libreadline.so.6
+cd /root/dropwatch/
+./dropwatch -lkas
+cd /usr/lib/x86_64-linux-gnu/
+ls libread*
+
+
+
+<END>
+<START>
+============================================
+
+At this point all commands run in the shell (e.g, apt) have sockets
+automatically bound to the VRF (see output of ss -ap 'dev == <vrf>'),
+including processes not running as root.
+
+root@VS1:~# ss -ap 'dev == Vrf-10'
+Netid  State      Recv-Q Send-Q Local Address:Port                 Peer Address:Port
+tcp    LISTEN     0      128    *%Vrf-10:bgp                   *:*                     users:(("bgpd",pid=7595,fd=25))
+tcp    LISTEN     0      128    ::%Vrf-10:bgp                  :::*                     users:(("bgpd",pid=7595,fd=26))
+root@VS1:~#
+
+<END>
+<START>
+============================================
+
+$ cat /home/admin/ebtables.sh
+#!/bin/bash
+/sbin/ebtables -I FORWARD -p 802_1Q --vlan-encap ARP -j ACCEPT
+/sbin/ebtables -I FORWARD -p ARP -j ACCEPT
+
+$ chmod +x /home/admin/ebtables.sh
+$ crontab -e
+Add below line at the end:
+@reboot /home/admin/ebtables.sh
+
+
+<END>
+<START>
+============================================
+
+/etc/network/interfaces
+
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+#auto eth0
+#iface eth0 inet dhcp
+
+auto eth0
+iface eth0 inet static
+address 0.0.0.0
+
+auto br0
+iface br0 inet static
+address 10.59.136.2
+netmask 255.255.240.0
+gateway 10.59.128.1
+dns-nameserver 192.19.189.10
+dns-search broadcom.com
+
+bridge_ports eth0
+bridge_stp off
+bridge_fd 0
+bridge_maxwait 0
+
+
+<END>
+<START>
+======================================================================
+
+root@VS1:~# cat > /etc/resolv.conf
+domain dhcp.server.net
+search dhcp.server.net
+nameserver 192.19.189.10
+nameserver 192.19.189.30
+
+<END>
+<START>
+======================================================================
+
+(gdb) p *(struct rtnl_neigh*)neigh
+No struct type named rtnl_neigh.
+(gdb) p *(struct rtnl_neigh*)0x556709b5bc90
+No struct type named rtnl_neigh.
+
+
+// sym.c
+#include "sample.h"
+
+#define NLHDR_COMMON                            \
+        int                     ce_refcnt;      \
+        struct nl_object_ops *  ce_ops;         \
+        struct nl_cache *       ce_cache;       \
+        struct nl_list_head     ce_list;        \
+        int                     ce_msgtype;     \
+        int                     ce_flags;       \
+        uint64_t                ce_mask;
+
+struct nl_object
+{
+        NLHDR_COMMON
+};
+
+struct rtnl_ncacheinfo
+{
+        uint32_t nci_confirmed; /**< Time since neighbour validty was last confirmed */
+        uint32_t nci_used;      /**< Time since neighbour entry was last ued */
+        uint32_t nci_updated;   /**< Time since last update */
+        uint32_t nci_refcnt;    /**< Reference counter */
+};
+
+
+struct rtnl_neigh
+{
+        NLHDR_COMMON
+        uint32_t        n_family;
+        uint32_t        n_ifindex;
+        uint16_t        n_state;
+        uint8_t         n_flags;
+        uint8_t         n_type;
+        struct nl_addr *n_lladdr;
+        struct nl_addr *n_dst;
+        uint32_t        n_probes;
+        struct rtnl_ncacheinfo n_cacheinfo;
+        uint32_t                n_state_mask;
+        uint32_t                n_flag_mask;
+        uint32_t                n_master;
+        uint32_t        n_vni;
+        uint16_t        n_vlan;
+        uint32_t        n_nhid;
+        uint8_t     n_nfy_flags;
+        uint8_t     n_dont_refresh;
+        uint8_t     n_protocol;
+};
+
+struct rtnl_neigh neigh;
+
+struct sample neigh;
+//end of sym.c
+
+gcc sym.c -lnl-3 -lnl-route-3 -I/usr/include/libnl3 -g -c
+
+docker cp sym.o iccpd:/home/.
+
+(gdb) add-symbol-file /home/sym.o 0
+add symbol table from file "/home/sym.o" at
+        .text_addr = 0x0
+(y or n) y
+Reading symbols from /home/sym.o...
+(gdb) p *(struct rtnl_neigh*)0x556709b5bc90
+$4 = {
+  ce_refcnt = 1,
+  ce_ops = 0x7f6a817915e0,
+  ce_cache = 0x0 <neigh>,
+  ce_list = {
+    next = 0x556709b5bca8,
+    prev = 0x556709b5bca8
+  },
+  ce_msgtype = 0,
+  ce_flags = 0,
+  ce_mask = 110,
+  n_family = 10,
+  n_ifindex = 157,
+  n_state = 2,
+  n_flags = 0 '\000',
+  n_type = 0 '\000',
+  n_lladdr = 0x556709b60400,
+  n_dst = 0x556709b54480,
+  n_probes = 0,
+  n_cacheinfo = {
+    nci_confirmed = 0,
+    nci_used = 0,
+    nci_updated = 0,
+    nci_refcnt = 0
+  },
+  n_state_mask = 2,
+  n_flag_mask = 0,
+  n_master = 0,
+  n_vni = 0,
+  n_vlan = 0,
+  n_nhid = 0,
+  n_nfy_flags = 0 '\000',
+  n_dont_refresh = 0 '\000',
+  n_protocol = 0 '\000'
+}
+(gdb)
+
+
+<END>
+<START>
+======================================================================
+Separate the debug information:
+
+objcopy --only-keep-debug main main.debug
+
+or
+
+cp main main.debug
+strip --only-keep-debug main.debug
+Strip debug information from origin file:
+
+objcopy --strip-debug main
+or
+
+strip --strip-debug --strip-unneeded main
+debug by debuglink mode:
+
+objcopy --add-gnu-debuglink main.debug main
+gdb main
+
+gdb
+(gdb) exec-file main
+(gdb) symbol-file main.debug
+
+(gdb) maint info sections # Then you look for .text section.
+(gdb) add-symbol-file ~/local/symbols/release.full 0x08048320
+(gdb) symbol-file main.debug
+
+Print code line using unstripped binary from gdb provided code location address
+
+/home/admin/xtables-nft-multi(+0xc4ba) [0x5639e8d654ba]
+/home/admin/xtables-nft-multi(+0xc6af) [0x5639e8d656af]
+/home/admin/xtables-nft-multi(+0x11503) [0x5639e8d6a503]
+/home/admin/xtables-nft-multi(+0x1fd5d) [0x5639e8d78d5d]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xea) [0x7f8ee1005d0a]
+/home/admin/xtables-nft-multi(+0x904a) [0x5639e8d6204a]
+
+ps407411@sonic-lvn-csg-001:/sonic/src/iptables$ gdb ./xtables-nft-multi
+GNU gdb (Debian 10.1-1.7) 10.1.90.20210103-git
+Copyright (C) 2021 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./xtables-nft-multi...
+(gdb) list *(0x5639e8d654ba)
+(gdb) info line *0xc4ba
+Line 54 of "xtables.c" starts at address 0xc4ba <print_bt+42> and ends at 0xc4bf <print_bt+47>.
+(gdb) info line *0xc6af
+Line 249 of "xtables.c" starts at address 0xc6aa <xtables_exit_error+330> and ends at 0xc6b1 <xtables_exit_error+337>.
+(gdb) info line *0x11503
+Line 2922 of "nft.c" starts at address 0x11503 <nft_action+4051> and ends at 0x1150f.
+(gdb) list *(nft_action+4051)
+0x11503 is in nft_action (nft.c:2922).
+2917    nft.c: No such file or directory.
+(gdb) info line *0x1fd5d
+Line 81 of "xtables-eb-standalone.c" starts at address 0x1fd5d <xtables_eb_main+253> and ends at 0x1fd67 <xtables_eb_main+263>.
+(gdb) info line *0x904a
+No line number information available for address 0x904a <_start+42>
+(gdb)
+
+
+<END>
+<START>
+================================================================
+
+coredumpctl
+
+apt-get install liblz4-tool
+
+lz4 -d <corefile>
+
+sudo apt-get install -y zstd
+zstd -d /var/lib/systemd/coredump/core.orchagent.0.4ebd0d6b69f74de597159650fd71755b.34930.1713417474000000.zst
+
+<END>
+<START>
+================================================================

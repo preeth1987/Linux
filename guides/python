@@ -1,0 +1,106 @@
+<START>
+============================================
+
+To create functions in pdb and execute:
+
+
+(Pdb) !import code; code.interact(local=vars())
+Python 3.8.12 (default, Feb 23 2022, 21:24:04)
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> def create_bstream(self, src, dst, vlan, srcmac, dstmac, port_idx=0):
+...     maps = self.ddx.get_config_maps()
+..:
+In : # use ctrl+d here to return to pdb shell...
+(Pdb) create_bstream(...)
+
+<END>
+<START>
+============================================
+Generating Table of contents from MD file
+
+~/.local/lib/python3.6/site-packages/bin/markdown-toc  -h 3 -t github ./sample.md
+Creating a Table of Contents for './sample.md'
+
+
+
+<END>
+<START>
+============================================
+
+textfsm:
+
+verify textfsm output parser tempalte verification
+
+/sys/textfsm/parser.py  template.py sample.input
+
+<END>
+<START>
+============================================
+On R1:
+# scapy
+
+Construct the required headers:
+>> a=Ether()
+>> b=Dot1Q()
+>> c=ARP()
+
+See and edit the fields in the headers:
+>> a.display()
+..
+>> a.dst='..' etc.
+
+And send it as a stack of headers. Scapy joins them internally.
+>> sendp(a/b/c, iface='Ethernet0')
+
+IPv6:
+
+a=Ether()
+b=Dot1Q()
+c=IPv6()
+
+a.src="52:54:f3:46:e2:8d"
+a.dst="33:33:00:00:00:01"
+
+b.id=20
+c.dst="ff02::1"
+c.src="2001:172:16:20::2"
+
+https://www.packetlevel.ch/html/scapy/scapyipv6.html
+
+eth=Ether(src="52:54:f3:46:e2:8d", dst="33:33:00:00:00:01", type=0x8100)
+vlan=Dot1Q(vlan=20)
+a=IPv6(nh=58, src='2001:172:16:20::2', dst='ff02::1', version=6L, hlim=255, plen=32, fl=0L, tc=0L)
+#b=ICMPv6ND_RA(code=0, chlim=64, H=0L, M=0L, O=1L, routerlifetime=1800, P=0L, retranstimer=0, prf=0L, res=0L, reachabletime=0, type=136)
+b=ICMPv6ND_NA(code=0, type=136, R=1L, S=1L, O=1L, tgt='2001:172:16:20::2')
+c=ICMPv6NDOptSrcLLAddr(type=2, len=1, lladdr='52:54:f3:46:e2:8d')
+sendp(eth/vlan/a/b/c, iface='PortChannel61', loop=1, inter=10)
+
+#d=ICMPv6NDOptMTU(res=0, type=5, len=1, mtu=1500)
+#e=ICMPv6NDOptPrefixInfo(A=1L, res2=0, res1=0L, L=1L, len=4, prefix='2001:db99:dead::', R=0L, validlifetime=2592000, prefixlen=64, preferredlifetime=604800, type=3)
+
+>>> ls(ICMPv6ND_NA)
+type       : ByteEnumField                       = (136)
+code       : ByteField                           = (0)
+cksum      : XShortField                         = (None)
+R          : BitField (1 bit)                    = (1)
+S          : BitField (1 bit)                    = (0)
+O          : BitField (1 bit)                    = (1)
+res        : XBitField (29 bits)                 = (0)
+tgt        : IP6Field                            = ('::')
+>>>
+
+>>> sendp(eth/vlan/a/b/c, iface='PortChannel61')
+.
+Sent 1 packets.
+>>>
+
+>>> sendp(eth/vlan/a/b/c, iface='PortChannel61', loop=1, inter=5)
+....^C
+Sent 4 packets.
+>>>
+
+<END>
+<START>
+============================================

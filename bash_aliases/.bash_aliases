@@ -98,7 +98,7 @@ hint() {
     awk '/<START>/ {p=1}; \
      {if (p==1) {a[NR]=$0}}; \
      /'"$pat"'/ {f=1}; \
-     /<END>/ {p=0; if (f==1) {for (i in a) print a[i]};f=0; delete a}' $HOME/hints
+     /<END>/ {p=0; if (f==1) {for (i in a) print a[i]};f=0; delete a}' $HOME/hints $HOME/git/Linux/guides/* $HOME/git/Windows/guides/*
 }
 
 #git shortcuts
