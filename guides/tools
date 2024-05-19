@@ -421,3 +421,16 @@ ssh-copy-id ubuntu@lvnvde0791.lvn.broadcom.net
 <END>
 <START>
 ============================================
+
+Disk read speed
+
+sudo hdparm -tT /dev/mmcblk0
+sudo hdparm -tT /dev/sda
+
+Write speed
+
+sudo dd if=/dev/zero of=/tmp/test bs=1G count=1 oflag=direct
+
+<END>
+<START>
+============================================

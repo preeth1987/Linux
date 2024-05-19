@@ -53,3 +53,5 @@ screen 0
 #Page UP & Down binding
 bindkey 5~ eval "copy" "stuff ^U"
 bindkey 6~ eval "copy" "stuff ^D"
+
+vbell off

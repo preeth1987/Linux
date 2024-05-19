@@ -60,7 +60,7 @@ function mvserver() {
     loc=`echo $files | awk '{print $(NF)}'`
     files=`echo $files | awk '{$NF=""}1'`
     for file in $files; do
-	if [ -f $file ]; then
+	if [ -f $file ] || [ -d $file ]; then
 	    echo "scp $flags $file $USER1@$VM1:$loc"
 	    scp $flags $file $USER1@$VM1:$loc .
 	else

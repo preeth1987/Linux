@@ -113,6 +113,75 @@ function! SplitWindow(...)
   close!
 endfunction
 
+
+function! SplitNameWindow(...)
+  " Define the number of windows you want to open
+  let num_windows = a:000[0]
+
+  let cmd_list = GetWords(a:000[1])
+  let cmd_len = (len(cmd_list))/num_windows
+  "echom cmd_list
+  "echom cmd_len
+
+  let lsplit = num_windows 
+  " Close all existing windows
+  silent! bufdo bwipeout!
+
+  " If more than 4 windows vertical split
+  if num_windows >= 4
+    execute 'vertical new'
+    let lsplit = num_windows/2
+  endif
+
+  let i = 0
+  let vsplit_count = 0
+  let word_count = 0
+  
+  while i < num_windows
+    "Get the command from the arguments
+    let cmd_count = 0
+    let command = ""
+    let window_name = "NONAME"
+    while cmd_count < cmd_len
+	if cmd_list[word_count] == "NAME:"
+	    let window_name = cmd_list[word_count+1]
+	    let cmd_count += 2
+	    let word_count += 2
+	else
+	    let command = command . cmd_list[word_count]
+	    let command = command . " "
+	    let cmd_count += 1
+	    let word_count += 1
+	endif
+    endwhile
+
+    " Open a new window and execute the cmd in terminal
+    if i <= lsplit
+       execute 'split | terminal ++curwin ' . command
+       execute 'setl stl=' . window_name
+       call RotateDown()
+    else
+       if vsplit_count == 0
+         " Close old window in vertical split
+         wincmd p
+         close!
+	 " Rotate to right old windows
+         call RotateRight()
+         let vsplit_count += 1
+       endif
+       execute 'split | terminal ++curwin ' . command
+       execute 'setl stl=' . window_name
+       call RotateDown()
+    endif
+
+    " Increase the counter
+    let i += 1
+  endwhile
+  " Close old window in vertical split
+  wincmd p
+  close!
+endfunction
+
 function! MultipleWindows(command)
     let num_windows = a:command
     let cmd_list = ""
@@ -138,6 +207,24 @@ endfunction
 
 command! -nargs=* OpenMultipleWindowsSsh :call OpenMultipleWindowsSsh(<f-args>)
 
+function! OpenMultipleNameWindowsSsh(...)
+    let num_windows = len(a:000)/2
+    let cmd_list = ""
+    let i = 0
+    while i < len(a:000)
+	let namecmd = " NAME: " . a:000[i]
+	let command = " ssh admin@" . a:000[i+1]
+	let cmd_list = cmd_list . namecmd 
+	let cmd_list = cmd_list . command
+	let i += 2
+    endwhile
+    echom cmd_list
+    " call feedkeys("\<CR>")
+    call SplitNameWindow(num_windows, cmd_list)
+endfunction
+
+command! -nargs=* OpenMultipleNameWindowsSsh :call OpenMultipleNameWindowsSsh(<f-args>)
+
 function! OpenMultipleWindowsCon(...)
     let num_windows = len(a:000)/2
     let cmd_list = ""
@@ -153,6 +240,24 @@ function! OpenMultipleWindowsCon(...)
 endfunction
 
 command! -nargs=* OpenMultipleWindowsCon :call OpenMultipleWindowsCon(<f-args>)
+
+function! OpenMultipleNameWindowsCon(...)
+    let num_windows = len(a:000)/3
+    let cmd_list = ""
+    let i=0
+    while i < len(a:000)
+	let namecmd = " NAME: " . a:000[i]
+	let command = " telnet " . a:000[i+1] . " " . a:000[i+2]
+	let cmd_list = cmd_list . namecmd 
+	let cmd_list = cmd_list . command
+	let i += 3
+    endwhile
+    echom cmd_list
+    call feedkeys("\<CR>")
+    call SplitNameWindow(num_windows, cmd_list)
+endfunction
+
+command! -nargs=* OpenMultipleNameWindowsCon :call OpenMultipleNameWindowsCon(<f-args>)
 
 function! TermList() abort
   let term_bufs = []

@@ -1,0 +1,77 @@
+<START>
+============================================
+Building kernel locally:
+
+https://www.raspberrypi.com/documentation/computers/linux_kernel.html#building-the-kernel-locally
+
+For RPI3:
+
+cd linux
+KERNEL=kernel7
+make bcm2709_defconfig
+
+For RPI5 64 bit:
+cd linux
+KERNEL=kernel_2712
+make bcm2712_defconfig
+
+adjust LOCALVERSION, change the following line in .config:
+CONFIG_LOCALVERSION="-v7l-MY_CUSTOM_KERNEL"
+
+
+For RPI3(32-bit):
+
+make -j4 zImage modules dtbs
+sudo make modules_install
+# Choose one of the following based on the kernel version
+# For kernels up to 6.4:
+sudo cp arch/arm/boot/dts/*.dtb /boot/firmware/
+# For kernel 6.5 and above:
+sudo cp arch/arm/boot/dts/broadcom/*.dtb /boot/firmware/
+sudo cp arch/arm/boot/dts/overlays/*.dtb* /boot/firmware/overlays/
+sudo cp arch/arm/boot/dts/overlays/README /boot/firmware/overlays/
+sudo cp arch/arm/boot/zImage /boot/firmware/$KERNEL.img
+
+For RPI5(64-bit):
+make -j4 Image.gz modules dtbs
+sudo make modules_install
+sudo cp arch/arm64/boot/dts/broadcom/*.dtb /boot/firmware/
+sudo cp arch/arm64/boot/dts/overlays/*.dtb* /boot/firmware/overlays/
+sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
+sudo cp arch/arm64/boot/Image.gz /boot/firmware/$KERNEL.img
+
+On Raspberry Pi 2, 3, 4 and 5, the -j4 flag splits the work between all four cores, speeding up compilation significantly.
+
+============================================
+Cross compiling  rpi kernel on ubuntu server
+
+apt-get install -y flex,bison,gcc-aarch64-linux-gnu,bc,libssl-dev
+cd $HOME/kernel_6.6/
+git clone https://github.com/raspberrypi/linux
+cd $HOME/kernel_6.6/linux
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bcm2712_defconfig
+make clean
+make clean all
+make clean -j24
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bcm2712_defconfig -j8
+make -j8 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image modules dtbs
+
+Copying image to target:
+All required kernel image and modules will be in $HOME/kernel_6.6/build
+
+mkdir -p $HOME/kernel_6.6/build/boot
+#Below builds boot for new kernel
+#Copy boot to /boot of the target 
+sudo cp arch/arm64/boot/Image $HOME/kernel_6.6/build/boot/kernel8.img
+sudo cp arch/arm64/boot/dts/broadcom/*.dtb $HOME/kernel_6.6/build/boot
+sudo cp arch/arm64/boot/dts/overlays/*.dtb* $HOME/kernel_6.6/build/boot/overlays/
+sudo cp arch/arm64/boot/dts/overlays/README $HOME/kernel_6.6/build/boot/overlays/
+
+#Below builds /lib which contains kernel modules, drivers and dependencies
+#Copy lib to /lib of the target 
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH=$HOME/kernel_6.6/build modules_install
+
+<END>
+<START>
+============================================
+
