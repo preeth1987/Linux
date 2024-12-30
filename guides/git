@@ -1,9 +1,7 @@
 <START>
 ============================================
 generate patch from prev commit
-
 git format-patch -n HEAD^
-
 
 diff of last commit
 git diff HEAD^ HEAD
@@ -12,12 +10,33 @@ diff of only file
 git diff HEAD^ HEAD -- ./file
 
 Names and status of changed files
-
 git diff HEAD~5 HEAD --name-status
 
 Diff of a particular commit
-
 git diff d9d9df04^ d9d9df04
+
+3 way merge
+git am -3 < changes.patch
+
+Unstage the added file without loosing changes
+git reset <filename>
+
+To move from one commit branch to other follow below, later checkout to other commit branch
+1. Commit changes
+git commit
+OR
+2. Stash changes
+git stash
+
+List stashs:
+git stash list 
+
+To apply specific changes from stash
+git stash apply stash@{2}
+
+To drop(delete) stash
+git stash drop stash@{2}
+
 
 <END>
 <START>
@@ -36,6 +55,27 @@ git rebase upstream/master
 
 git push -f origin master
 
+
+<END>
+<START>
+======================================================================
+
+Creating multiple branch for each commit from feature branch, merging
+
+git checkout feature_branch
+git checkout -b commit1
+make your changes in commit1
+
+If new changes merged in feature_branch
+git commit changes in commit1 branch
+
+git checkout feature_branch
+git pull --rebase # resolve any conflicts and do git add
+
+git checkout commit1
+git rebase master #resolve any conflicts manually if any and do git add.
+git commit final changes.
+git push
 
 <END>
 <START>

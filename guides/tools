@@ -18,6 +18,9 @@ awk '{$NF=""}1' citi_credit
 Print all except 1st column
 awk '{for (i=2; i<=NF; i++) print $i}' citi_credit
 
+Add particular column 
+awk -F' ' '{sum+=$57;} END{print sum;}' file.txt
+
 <END>
 <START>
 ============================================
@@ -256,6 +259,24 @@ nft add rule bridge filter dhcp udp dport 68 counter drop
 nft delete rule bridge filter FORWARD handle 5
 
 
+Monitoring nft rules
+
+Listen to all events, report in native nft format.
+nft monitor
+
+Listen to deleted rules, report in JSON format.
+nft -j monitor destroy rules
+
+Listen to both new and destroyed chains, in native nft format.
+nft monitor chains
+
+Listen to ruleset events such as table, chain, rule, set, counters and quotas, in native nft format.
+nft monitor ruleset
+
+Trace incoming packets from host 10.0.0.1.
+nft add rule filter input ip saddr 10.0.0.1 meta nftrace set 1
+nft monitor trace
+
 <END>
 <START>
 ============================================
@@ -430,6 +451,64 @@ sudo hdparm -tT /dev/sda
 Write speed
 
 sudo dd if=/dev/zero of=/tmp/test bs=1G count=1 oflag=direct
+
+<END>
+<START>
+============================================
+
+netdev qdisc
+View your current qdisc:
+
+# tc qdisc show dev eth0
+
+# tc -s qdisc show dev enp0s1
+qdisc fq_codel 0: root refcnt 2 limit 10240p flows 1024 quantum 1514 target 5.0ms interval 100.0ms memory_limit 32Mb ecn
+Sent 1008193 bytes 5559 pkt (dropped 233, overlimits 55 requeues 77)
+backlog 0b 0p requeues 0
+
+# sysctl -a | grep qdisc
+net.core.default_qdisc = fq_codel
+
+View the qdisc of current Ethernet connection:
+
+# tc -s qdisc show dev enp0s1
+qdisc fq_codel 0: root refcnt 2 limit 10240p flows 1024 quantum 1514 target 5.0ms interval 100.0ms memory_limit 32Mb ecn
+Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0)
+backlog 0b 0p requeues 0
+maxpacket 0 drop_overlimit 0 new_flow_count 0 ecn_mark 0
+new_flows_len 0 old_flows_len 0
+
+Update the existing qdisc:
+# sysctl -w net.core.default_qdisc=pfifo_fast
+
+To apply the changes, reload the network driver:
+# modprobe -r NETWORKDRIVERNAME
+# modprobe NETWORKDRIVERNAME
+
+<END>
+<START>
+============================================
+To check package version
+
+apt-cache policy libc6
+
+To install specific package version
+
+apt-get install -y libc6=2.31-13
+
+To uninstall and remove package
+
+apt-get remove -y libc6 --autoremove
+
+To download and install:
+
+wget -c https://ftp.debian.org/debian/pool/main/libn/libnfnetlink/libnfnetlink0_1.0.2-2_amd64.deb
+apt-get install -y ./libnfnetlink0_1.0.2-2_amd64.deb
+
+
+Look for package dependency by searching for package under https://packages.debian.org/
+or
+https://packages.debian.org/<package-name>
 
 <END>
 <START>

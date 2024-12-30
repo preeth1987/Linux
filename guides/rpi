@@ -45,7 +45,7 @@ On Raspberry Pi 2, 3, 4 and 5, the -j4 flag splits the work between all four cor
 ============================================
 Cross compiling  rpi kernel on ubuntu server
 
-apt-get install -y flex,bison,gcc-aarch64-linux-gnu,bc,libssl-dev
+apt-get install -y git make flex bison gcc-aarch64-linux-gnu bc libssl-dev libc6-dev libncurses5-dev
 cd $HOME/kernel_6.6/
 git clone https://github.com/raspberrypi/linux
 cd $HOME/kernel_6.6/linux

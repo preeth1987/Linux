@@ -16,3 +16,4 @@ BackgroundColour=0,0,0
 Transparency=medium
 FontWeight=700
 FontIsBold=yes
+OpaqueWhenFocused=no

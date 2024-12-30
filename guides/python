@@ -46,6 +46,13 @@ Construct the required headers:
 >> b=Dot1Q()
 >> c=ARP()
 
+>> a=Ether(src="52:54:f3:ed:e0:3b", dst="ff:ff:ff:ff:ff:ff")
+>> b=Dot1Q(id=0, vlan=101, type=0x0806)
+>> c=ARP(hwsrc="52:54:f3:ed:e0:3b", psrc="101.0.0.12", hwdst="00:00:00:00:00:00", pdst="101.0.0.18")
+
+>> sendp(a/b/c, iface='Ethernet0')
+
+
 See and edit the fields in the headers:
 >> a.display()
 ..

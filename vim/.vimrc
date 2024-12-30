@@ -2,7 +2,7 @@
 set term=xterm
 """" START OF PLUGINS
 
-execute pathogen#infect()
+"execute pathogen#infect()
 syntax on
 filetype plugin indent on
 
@@ -288,3 +288,4 @@ map <C-J> '<,'>s/,/,\r/g
 map <ESC>[8~    <End>
 
 map <ESC>[7~    <Home>
+:command Autosave autocmd TextChanged,TextChangedI * silent update 

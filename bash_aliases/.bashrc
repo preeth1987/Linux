@@ -1,6 +1,8 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
+#
+start=$(date +%s%N)
 
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
@@ -85,6 +87,10 @@ if [ -f ~/git/Linux/bash_aliases/.bash_aliases ]; then
 	. ~/git/Linux/bash_aliases/.bash_aliases
 fi
 
+if [ -f ~/git/Linux/bash_aliases/.vim_aliases ]; then
+        . ~/git/Linux/bash_aliases/.vim_aliases
+fi
+
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
@@ -113,4 +119,10 @@ else
 			. ~/private/.mycreds
 		fi
 	fi
+fi
+
+end=$(date +%s%N)
+diff=$((end-start))
+if (( diff > 90000000 )); then
+    printf "%s.%s seconds to load bash profile\n" "${diff:0: -9}" "${diff: -9:3}"
 fi
