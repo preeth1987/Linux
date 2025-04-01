@@ -62,7 +62,7 @@ function mvserver() {
     for file in $files; do
 	if [ -f $file ] || [ -d $file ]; then
 	    echo "scp $flags $file $USER1@$VM1:$loc"
-	    scp $flags $file $USER1@$VM1:$loc .
+	    scp $flags $file $USER1@$VM1:$loc
 	else
 	    echo "$file: no such file or directory"
 	fi

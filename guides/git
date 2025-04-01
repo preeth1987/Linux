@@ -81,3 +81,30 @@ git push
 <START>
 ======================================================================
 
+Revert to a specific commit:
+
+git reset --hard <commit-id> #resets head to specific commit discarding all changes
+
+git reset --soft <commit-id> #resets head to specific commit retaining changes locally
+
+
+Revert a specific commit:
+
+git revert <commit-id>
+
+<END>
+<START>
+======================================================================
+
+You can checkout a commit by a specific date using rev-parse like this:
+
+git checkout 'master@{1979-02-26 18:30:00}'
+
+
+git checkout `git rev-list -n 1 --first-parent --before="2009-07-27 13:37" master`
+# Note the --first-parent if you want only your history and not versions brought in by a merge. That's what you usually want.
+
+<END>
+<START>
+======================================================================
+

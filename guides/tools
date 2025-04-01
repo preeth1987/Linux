@@ -21,6 +21,8 @@ awk '{for (i=2; i<=NF; i++) print $i}' citi_credit
 Add particular column 
 awk -F' ' '{sum+=$57;} END{print sum;}' file.txt
 
+for line in $(tail -10 credit); do l0=$(echo -e $line | awk '{print $1}');l1=$(echo -e $line | awk -F"Ref No:" '{print $1}' | awk '{for (i=2; i<=NF; i++) printf "%s ",$i}') ; l2=$(echo -e $line | awk -F"Ref No:" '{print $2}' | awk '{print $1}') ; l3=$(echo -e $line | awk '{print $(NF-1)}') l4=$(echo -e $line | awk '{print $NF}'); echo "$l0;$l1;$l2;;$l3;$l4"; done
+
 <END>
 <START>
 ============================================
@@ -104,6 +106,8 @@ To convert window to tab, CTRL-W T
 
 To move cursor to specific line use command :set mouse=a
 
+To search and replace Ref No:<newline> with Ref No:
+1,$s/Ref No:\n/Ref No: /gc
 <END>
 <START>
 ============================================
@@ -509,6 +513,12 @@ apt-get install -y ./libnfnetlink0_1.0.2-2_amd64.deb
 Look for package dependency by searching for package under https://packages.debian.org/
 or
 https://packages.debian.org/<package-name>
+
+<END>
+<START>
+============================================
+
+objdump -D -Mintel,i386 -b binary -m i386 /usr/bin/bgpd > bgpd.S
 
 <END>
 <START>

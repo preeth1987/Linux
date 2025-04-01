@@ -258,3 +258,14 @@ gedit() {
     gitss | grep -i "M " | awk -F ' ' '{print $2}' | /usr/bin/xargs vim
     stty sane
 }
+
+gdiff_recursive() {
+    if [ -z $1 ]
+    then
+        echo "Usage: gdiff_recursive <patch>"
+        return
+    fi
+    find $1 -name '.git' -type d| awk -F'.git' '{printf "%s%s -> ",$1,$2}; {gsub(/\//,"_")}1' | awk -F ' -> ' '{system("cd "$1 " && pwd && git --no-pager diff HEAD > "$2".patch") || true}'
+    find $1 -name '*.git.patch' -exec mv -t . {} \;
+}
+

@@ -280,6 +280,10 @@ fun! Retab(expandtab)
         silent! execute '%substitute#^\%(\t\)\+#\=repeat("' . l:spaces . '", len(submatch(0)))#e'
     endif
 endfun
+fun! LoadPlugin()
+    execute pathogen#infect()
+    autocmd VimEnter * GitGutterEnable
+endfun
 filetype plugin indent on
 if has('terminal')
   tnoremap <S-Space> <Space>
@@ -289,3 +293,6 @@ map <ESC>[8~    <End>
 
 map <ESC>[7~    <Home>
 :command Autosave autocmd TextChanged,TextChangedI * silent update 
+:command LoadPlugin call LoadPlugin()
+:command Gitg GitGutterToggle
+"autocmd VimEnter * GitGutterDisable

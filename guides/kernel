@@ -1444,6 +1444,8 @@ No line number information available for address 0x904a <_start+42>
 <START>
 ================================================================
 
+journalctl -l
+
 coredumpctl
 
 apt-get install liblz4-tool
@@ -1452,6 +1454,41 @@ lz4 -d <corefile>
 
 sudo apt-get install -y zstd
 zstd -d /var/lib/systemd/coredump/core.orchagent.0.4ebd0d6b69f74de597159650fd71755b.34930.1713417474000000.zst
+
+
+Soft and hard limit of core files size
+# ulimit -Sc
+# ulimit -Hc
+# ulimit -c unlimited
+
+Getting and setting core file pattern:
+
+# cat /proc/sys/kernel/core_pattern
+core
+# cat /proc/sys/kernel/core_uses_pid
+0
+# echo "1" > /proc/sys/kernel/core_uses_pid
+# echo "/tmp/corefiles/core" > /proc/sys/kernel/core_pattern
+
+dump more info:
+
+# cat /proc/<pid>/coredump_filter
+00000003
+
+The following 4 memory types are supported:
+
+(bit 0) anonymous private memory
+(bit 1) anonymous shared memory
+(bit 2) file-backed private memory
+(bit 3) file-backed shared memory
+# echo 0xF > /proc/<pid>/coredump_filter
+
+finding limits of a process:
+
+# egrep "Units|core" /proc/<pid>/limits
+Limit                     Soft Limit           Hard Limit           Units
+Max core file size        1024000
+
 
 <END>
 <START>
