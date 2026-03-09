@@ -108,3 +108,12 @@ git checkout `git rev-list -n 1 --first-parent --before="2009-07-27 13:37" maste
 <START>
 ======================================================================
 
+To clean all directory of new files created
+
+git clean -fdx .
+
+<END>
+<START>
+======================================================================
+
+

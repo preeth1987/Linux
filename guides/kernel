@@ -36,6 +36,11 @@ based on above use echo "<field> == <value>" > filter
 echo "dev == \"Vlan100\"" > filter
 echo "dev == \"Vlan100\" || dev == \"Ethernet0\"" > filter
 
+To get backtrace at anypoint
+add dump_stack()
+
+pr_debug() to add dynamic debug trace
+
 <END>
 <START>
 ============================================
@@ -480,7 +485,7 @@ Crash kdump decoding
 
 Kdump analysis example:
 
-apt-get update; apt-get install -y crash ar
+apt-get update; apt-get install -y crash binutils
 root@host3:/home/admin# ls
 config.py  kdump.202001080712  linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb  main.py
 root@host3:/home/admin# ar x linux-image-4.9.0-11-2-amd64-dbg_4.9.189-3+deb9u2_amd64.deb
@@ -804,6 +809,43 @@ https://github.com/dsahern/linux/tree/44edef77bd92730e1520b07f5ae2c9f4628738a8/s
 <START>
 ============================================
 
+spinlock and mutex profiling in system:
+
+ls /proc/lock_stat
+
+sudo echo 1 > /proc/sys/kernel/lock_stat
+
+
+To start profiling spinlocks and mutexes across the system:
+
+sudo perf lock record
+
+Once done recording
+
+sudo perf lock report
+
+This gives a summary like:
+
+
+     Name                 acquire    contended   avg wait (ns)
+     ------------        --------    ---------   --------------
+     &my_spinlock        1000        45          10345
+     &another_lock       120         5           3405
+
+acquire: Number of times the lock was acquired
+
+contended: Number of times it was contended
+
+avg wait: Average wait time for contended cases
+
+
+sudo perf lock stat
+
+This breaks down lock acquisitions and contention per caller site and lock class.
+
+
+<END>
+<START>
 ============================================
 perf record -e fib6:fib6_table_lookup -ag
 perf report
@@ -1489,6 +1531,53 @@ finding limits of a process:
 Limit                     Soft Limit           Hard Limit           Units
 Max core file size        1024000
 
+
+<END>
+<START>
+================================================================
+Match if core-file and binary are matching:
+readelf -n /path/to/binary | grep 'Build ID'
+readelf -n /path/to/corefile | grep 'Build ID'
+
+Method 2:
+strings /path/to/corefile | grep -i /path/to/binary
+This can give clues about which binary generated the core dump.
+
+Method 3:
+file core
+
+<END>
+<START>
+================================================================
+
+CPU affinity of a running process
+
+taskset -c 2 my_program 
+to run my_program on CPU core 2
+
+taskset -cp <cpu-list> <pid>
+
+You can combine taskset with the nice command to set CPU affinity and process priority at the same time. For example:
+
+taskset -c 2 nice -n -10 my_program
+
+This runs my_program on core 2 with a higher priority (negative nice value).
+
+taskset -c -p <pid>
+
+To monitor a process CPU affinity
+
+<END>
+<START>
+================================================================
+
+top -b -d 0.25 -n 1
+
+<END>
+<START>
+================================================================
+
+sudo bridge fdb add 00:00:00:22:30:53 dev PortChannel100 master vlan 3053
 
 <END>
 <START>

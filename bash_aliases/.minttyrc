@@ -1,6 +1,6 @@
 BoldAsFont=yes
 ScrollbackLines=1316134911
-BellFlash=yes
+BellFlash=no
 CursorColour=193,193,193
 CursorType=block
 Columns=80
@@ -17,3 +17,4 @@ Transparency=medium
 FontWeight=700
 FontIsBold=yes
 OpaqueWhenFocused=no
+BellType=0

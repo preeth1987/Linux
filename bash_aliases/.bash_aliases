@@ -90,7 +90,7 @@ cpr() {
 hint() {
     if [[ ${#} -lt 1 ]]
     then
-        echo "Usage: hint <key>"
+        echo "Usage: hint [-i] <key>"
         return
     fi
     ignorecase=0
@@ -110,6 +110,32 @@ hint() {
      {if (p==1) {a[NR]=$0}}; \
      BEGIN { IGNORECASE = 1 };/'"$pat"'/ {f=1}; \
      /<END>/ {p=0; if (f==1) {for (i in a) print a[i]};f=0; delete a}' $HOME/hints $HOME/git/Linux/guides/* $HOME/git/Windows/guides/*
+    fi
+}
+
+ref() {
+    if [[ ${#} -lt 1 ]]
+    then
+        echo "Usage: ref [-i] <key>"
+        return
+    fi
+    ignorecase=0
+    if [ "$1" = "-i" ]; then
+	ignorecase=1
+	set - $2
+    fi
+    echo "References for $1"
+    pat=$1
+    if [ "$ignorecase" = 0 ]; then
+    awk '/<START>/ {p=1}; \
+     {if (p==1) {a[NR]=$0}}; \
+     /'"$pat"'/ {f=1}; \
+     /<END>/ {p=0; if (f==1) {for (i in a) print a[i]};f=0; delete a}' $HOME/references
+    else
+    awk '/<START>/ {p=1}; \
+     {if (p==1) {a[NR]=$0}}; \
+     BEGIN { IGNORECASE = 1 };/'"$pat"'/ {f=1}; \
+     /<END>/ {p=0; if (f==1) {for (i in a) print a[i]};f=0; delete a}' $HOME/references
     fi
 }
 
@@ -145,4 +171,7 @@ recursive_diff() {
     find "." -type f -print -exec diff "{}" "$pfx/{}" \;
 }
 
+vimt() {
+    vi -c "set mouse=a | term"
+}
 alias now='date "+%Y_%m_%d_%M_%S"'

@@ -21,7 +21,9 @@ awk '{for (i=2; i<=NF; i++) print $i}' citi_credit
 Add particular column 
 awk -F' ' '{sum+=$57;} END{print sum;}' file.txt
 
-for line in $(tail -10 credit); do l0=$(echo -e $line | awk '{print $1}');l1=$(echo -e $line | awk -F"Ref No:" '{print $1}' | awk '{for (i=2; i<=NF; i++) printf "%s ",$i}') ; l2=$(echo -e $line | awk -F"Ref No:" '{print $2}' | awk '{print $1}') ; l3=$(echo -e $line | awk '{print $(NF-1)}') l4=$(echo -e $line | awk '{print $NF}'); echo "$l0;$l1;$l2;;$l3;$l4"; done
+IFS=$'\n'; for line in $(tail -10 yes_credit); do l0=$(echo -e $line | awk '{print $1}');l1=$(echo -e $line | awk -F"Ref No:" '{print $1}' | awk '{for (i=2; i<=NF; i++) printf "%s ",$i}') ; l2=$(echo -e $line | awk -F"Ref No:" '{print $2}' | awk '{print $1}') ; l3=$(echo -e $line | awk '{print $(NF-1)}') l4=$(echo -e $line | awk '{print $NF}'); echo "$l0;$l1;$l2;;$l3;$l4"; done
+
+IFS=$'\n'; for line in $(tail -15 axis_citi_credit); do l0=$(echo -e $line | awk '{print $1}');l1=$(echo -e $line | awk -F"Dr" '{print $1}' | awk '{for (i=2; i<=NF-1; i++) printf "%s ",$i}') ; l2=$(echo -e $line | awk -F"Dr" '{print $1}' | awk '{print $NF}'); l3=$(echo -e $line | awk '{print $(NF-1)}') l4=$(echo -e $line | awk '{print $NF}'); echo "$l0;;$l1;$l2;"; done
 
 <END>
 <START>
@@ -281,6 +283,26 @@ Trace incoming packets from host 10.0.0.1.
 nft add rule filter input ip saddr 10.0.0.1 meta nftrace set 1
 nft monitor trace
 
+
+Delete should be with handle:
+nft delete rule inet filter input handle 5
+nft delete rule bridge filter FORWARD handle 5
+
+Adding to beginning:
+sudo nft insert table bridge filter FORWARD ether type vlan vlan type ip6 ip6 nexthdr icmpv6 icmpv6 type nd-neighbor-advert counter drop
+sudo nft insert table bridge filter FORWARD ether type vlan vlan type ip6 ip6 nexthdr icmpv6 icmpv6 type nd-neighbor-advert counter jump BRIDGE_FILTER_FORWARD_IPV6_NA
+
+sudo nft insert rule bridge filter BRIDGE_FILTER_FORWARD_IPV6_NA  ip6 nexthdr icmpv6 icmpv6 type nd-neighbor-advert  counter drop
+
+to flush complete chain
+nft flush chain bridge filter BRIDGE_FILTER_FORWARD_IPV6_NA
+
+nft add rule ip filter INPUT tcp dport 18515 reject with icmp admin-prohibited
+
+nft -a list ruleset # List with rule numbers to delete
+
+nft delete rule ip filter INPUT handle 38
+
 <END>
 <START>
 ============================================
@@ -520,6 +542,19 @@ https://packages.debian.org/<package-name>
 
 objdump -D -Mintel,i386 -b binary -m i386 /usr/bin/bgpd > bgpd.S
 
+<END>
+<START>
+============================================
+
+get source of any app from debian
+
+wget https://deb.debian.org/debian/pool/main/n/nftables/nftables_0.9.8-3.1+deb11u2.dsc
+screen -rd sbuild
+wget https://deb.debian.org/debian/pool/main/n/nftables/nftables_0.9.8.orig.tar.bz2
+screen -rd sbuild
+wget https://deb.debian.org/debian/pool/main/n/nftables/nftables_0.9.8-3.1+deb11u2.debian.tar.xz
+chmod -R 777 .
+dpkg-source -x nftables_0.9.8-3.1+deb11u2.dsc
 <END>
 <START>
 ============================================

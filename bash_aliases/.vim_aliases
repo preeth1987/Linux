@@ -1,0 +1,80 @@
+#multiple window connect utilities
+
+function vissh_name(){
+    echo "IP Count: $#"
+    if [[ $# -lt 1 ]]; then
+        echo "Atleast one IP should be provided; multiple IP with space separated"
+        return;
+    fi
+
+    vicmd=" execute 'OpenMultipleNameWindowsSsh $@'"
+    echo "CMD: vim -c \"$vicmd \""
+    read -p "Press enter to continue"
+    $VI -c "$vicmd"
+}
+
+function vissh1(){
+    echo "IP Count: $#"
+    if [[ $# -lt 1 ]]; then
+        echo "Atleast one IP should be provided; multiple IP with space separated"
+        return;
+    fi
+
+    vicmd=" execute 'OpenMultipleWindowsSsh $@'"
+    echo "CMD: vim -c \"$vicmd \""
+    read -p "Press enter to continue"
+    $VI -c "$vicmd "
+}
+
+function vicon_name() {
+    echo "Console Count: $#"
+    node_list=`echo $1 | cut -d'|' -f1 -`
+    ip_list=`echo $1 | cut -d'|' -f2 -`
+    echo "nodes $node_list"
+    echo "ips $ip_list"
+    nodes=( $node_list )
+    set -- $ip_list
+    echo "Console Count: $#"
+
+    if (( $# % 2 )); then
+        echo "ip and console count is not even"
+        return;
+    fi
+
+    if [[ $# -gt 10 ]]; then
+        #echo "> 5 window doing vertical split as well"
+        export vicmd=""
+    else
+        export vicmd="set splitbelow"
+    fi
+
+    ip_list=$1
+    n=0
+    for (( i=1;i<=$#;i++ )); do
+        ip="${!i}"
+        let "i=i+1"
+        port="${!i}"
+        if [[ -n $vicmd ]]; then
+    	vicmd=$vicmd" | "
+        fi
+        if [[ $i -gt 8 ]]; then
+    	#vicmd=$vicmd"execute 'vert bel terminal telnet $ip $port' | wincmd j"
+    	#vicmd=$vicmd"execute 'vert bel terminal telnet $ip $port' | setl stl=$port | wincmd j"
+    	vicmd=$vicmd"execute 'vert bel terminal telnet $ip $port' | setl stl=${nodes[$n]} | wincmd j"
+        else
+    	#vicmd=$vicmd"execute 'terminal telnet $ip $port'"
+    	#vicmd=$vicmd"execute 'terminal telnet $ip $port' | setl stl=$port"
+    	vicmd=$vicmd"execute 'terminal telnet $ip $port' | setl stl=${nodes[$n]}"
+        fi
+        let "n=n+1"
+    done
+
+    echo "CMD: vim -c \"$vicmd | startinsert\""
+    if [[ $# -gt 20 ]]; then
+        echo "Cannot connect to more than 10 IP from same window"
+        return;
+    fi
+    read -p "Press enter to continue"
+    $VI -c "$vicmd | startinsert"
+
+}

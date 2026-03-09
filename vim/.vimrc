@@ -2,7 +2,7 @@
 set term=xterm
 """" START OF PLUGINS
 
-"execute pathogen#infect()
+execute pathogen#infect()
 syntax on
 filetype plugin indent on
 
@@ -296,3 +296,4 @@ map <ESC>[7~    <Home>
 :command LoadPlugin call LoadPlugin()
 :command Gitg GitGutterToggle
 "autocmd VimEnter * GitGutterDisable
+set termwinscroll=100000
